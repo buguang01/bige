@@ -1,0 +1,17 @@
+2019-04-07 14:42:57 [error_40		] panicinfo
+goroutine 5 [running]:
+runtime/debug.Stack(0x0, 0x0, 0x0)
+	/usr/local/go/src/runtime/debug/stack.go:24 +0xa1
+buguang01/gsframe/loglogic.PError(0x1161780, 0x11ae340)
+	/Users/buguang01/Documents/goworks/src/buguang01/gsframe/loglogic/LogManage.go:205 +0xc6
+buguang01/gsframe/loglogic.TestLog.func1()
+	/Users/buguang01/Documents/goworks/src/buguang01/gsframe/loglogic/Log_test.go:14 +0x54
+panic(0x1161780, 0x11ae340)
+	/usr/local/go/src/runtime/panic.go:522 +0x1e0
+buguang01/gsframe/loglogic.TestLog(0xc0000c0100)
+	/Users/buguang01/Documents/goworks/src/buguang01/gsframe/loglogic/Log_test.go:26 +0x156
+testing.tRunner(0xc0000c0100, 0x119d488)
+	/usr/local/go/src/testing/testing.go:865 +0x112
+created by testing.(*T).Run
+	/usr/local/go/src/testing/testing.go:916 +0x659
+

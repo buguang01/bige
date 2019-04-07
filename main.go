@@ -1,6 +1,8 @@
 package main
 
 import (
+	"buguang01/gsframe/loglogic"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +11,15 @@ import (
 )
 
 func main() {
+	fmt.Println("test")
+	loglogic.Init(0, "logs")
+	loglogic.PDebug("test1")
+	loglogic.PDebug("test2")
+	time.Sleep(60 * time.Second)
+}
+
+func main1() {
+
 	server := &http.Server{
 		Addr:         ":8001",
 		WriteTimeout: 4 * time.Second,

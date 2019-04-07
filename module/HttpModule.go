@@ -1,14 +1,13 @@
 package module
 
 import (
+	"buguang01/gsframe/config"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"sync"
 	"time"
-
-	"bug.guang/config"
 )
 
 //HTTPModule ...
