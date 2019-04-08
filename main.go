@@ -24,6 +24,7 @@ func main1() {
 		Addr:         ":8001",
 		WriteTimeout: 4 * time.Second,
 	}
+	
 	quit := make(chan os.Signal)
 	//创建chan，用来指示我要退出这个服务器了，麻烦帮忙关闭一下
 	signal.Notify(quit, os.Interrupt)
