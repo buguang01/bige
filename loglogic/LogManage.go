@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime/debug"
+	"sync"
 	"time"
 )
 
@@ -35,6 +36,7 @@ type LogManageModel struct {
 	CurrDay       time.Time                    //当前写日志的那个目录的日期
 	ListenKeyList map[int]bool                 //监听key列表
 	msgchan       chan *LogMsgModel            // 日志扇入流
+	wg            sync.WaitGroup               //用来确认是不是关了
 
 }
 
@@ -46,27 +48,28 @@ func Init(minlv LogLevel, pathstr string) {
 	go logExample.Handle()
 }
 
-func Close() {
-
+//LogClose 正常关闭日志服务； 在程序退出的时候，才可以运行的方法
+func LogClose() {
+	close(logExample.msgchan)
+	logExample.wg.Wait()
+	for _, lghd := range logExample.LogKeyList {
+		lghd.WaitClose()
+	}
+	for _, lghd := range logExample.LogList {
+		lghd.WaitClose()
+	}
+	// time.Sleep(10 * time.Second)
 }
 
 //Handle logmanage的主协程
 func (lgmd *LogManageModel) Handle() {
-
+	lgmd.wg.Add(1)
+	defer lgmd.wg.Done()
 	for msg := range lgmd.msgchan {
 		//拿到了一个要写的日志
-		//判断是不是需要写入的日志
-		if msg.LogLv < lgmd.MiniLv {
-			continue
-		}
+		var lghd *LogHandleModel
 		//确认目录是不是有了
 		lgmd.checkDir(msg.CreateTime)
-		//拿到目标日志对象
-		lghd := lgmd.getLogModel(msg.LogLv)
-		lghd.LogChan <- msg
-		//写入主日志文件
-		lghd = lgmd.getLogModel(0)
-		lghd.LogChan <- msg
 		//如果有设置keyid就检查一下这个keyid要不要写日志
 		if msg.KeyID != -1 {
 			if _, ok := lgmd.ListenKeyList[msg.KeyID]; ok {
@@ -74,6 +77,18 @@ func (lgmd *LogManageModel) Handle() {
 				lghd.LogChan <- msg
 			}
 		}
+		//判断是不是需要写入的日志
+		if msg.LogLv < lgmd.MiniLv {
+			continue
+		}
+
+		//拿到目标日志对象
+		lghd = lgmd.getLogModel(msg.LogLv)
+		lghd.LogChan <- msg
+		//写入主日志文件
+		lghd = lgmd.getLogModel(0)
+		lghd.LogChan <- msg
+
 	}
 }
 

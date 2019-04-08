@@ -63,8 +63,9 @@ func NewLogHandleByKeyID(dt time.Time, keyid int, pathstr string) (result *LogHa
 //handle 写日志的协程
 func (lghd *LogHandleModel) handle() {
 	lghd.wg.Add(1)
-	defer lghd.Logfile.Close()
 	defer lghd.wg.Done()
+	defer lghd.Logfile.Close()
+
 	for msg := range lghd.LogChan {
 		if msg.Stack == "" {
 			lghd.Logger.Output(2, fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d %s %s",
@@ -88,8 +89,8 @@ func (lghd *LogHandleModel) handle() {
 				msg.Msg,
 				msg.Stack))
 		}
-
 	}
+	fmt.Println("close handle")
 }
 
 //Close 关闭本日志

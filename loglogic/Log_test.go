@@ -2,11 +2,10 @@ package loglogic
 
 import (
 	"testing"
-	"time"
 )
 
 func TestLog(t *testing.T) {
-	defer time.Sleep(10 * time.Second)
+	defer LogClose()
 
 	defer func() {
 		r := recover()
@@ -15,7 +14,7 @@ func TestLog(t *testing.T) {
 
 		}
 	}()
-	Init(0, "logs")
+	Init(20, "logs")
 	SetListenKeyID(1001)
 	PDebug("test1")
 	PInfo("test2")
