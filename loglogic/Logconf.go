@@ -48,17 +48,17 @@ func GetFileNameByLogLevel(lv LogLevel) (result string) {
 //GetLogNameByLogLevel 按日志等级生成日志等级的名字
 func GetLogNameByLogLevel(lv LogLevel) (result string) {
 	if lv == LogLevelmainlevel {
-		result = fmt.Sprintf("[main_%d		]", lv)
+		result = fmt.Sprintf("[main_%d]", lv)
 	} else if lv <= LogLeveldebuglevel {
-		result = fmt.Sprintf("[debug_%d		]", lv)
+		result = fmt.Sprintf("[debug_%d]", lv)
 	} else if lv <= LogLevelinfolevel {
-		result = fmt.Sprintf("[info_%d		]", lv)
+		result = fmt.Sprintf("[info_%d]", lv)
 	} else if lv <= LogLevelstatuslevel {
-		result = fmt.Sprintf("[status_%d	]", lv)
+		result = fmt.Sprintf("[status_%d]", lv)
 	} else if lv <= LogLevelerrorlevel {
-		result = fmt.Sprintf("[error_%d		]", lv)
+		result = fmt.Sprintf("[error_%d]", lv)
 	} else if lv <= LogLevelfatallevel {
-		result = fmt.Sprintf("[fatal_%d		]", lv)
+		result = fmt.Sprintf("[fatal_%d]", lv)
 	}
 	return result
 }

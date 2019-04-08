@@ -2,9 +2,9 @@ package module
 
 import (
 	"buguang01/gsframe/config"
+	"buguang01/gsframe/loglogic"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -21,17 +21,20 @@ type HTTPModule struct {
 }
 
 //Init IModule接口的实现
-func (mod *HTTPModule) Init(configpath string) {
+func (mod *HTTPModule) Init(configpath string) error {
 	if configpath == "" {
 		configpath = "config/http.json"
 	}
 	filedb, err := ioutil.ReadFile(configpath)
 	if err != nil {
 		//有问题就要退出的
-
+		loglogic.PFatal(err)
+		return err
 	}
 	if err = json.Unmarshal([]byte(filedb), &mod.cg); err != nil {
 		//有问题就要退出
+		loglogic.PFatal(err)
+		return err
 	}
 
 	mod.httpServer = &http.Server{
@@ -44,6 +47,7 @@ func (mod *HTTPModule) Init(configpath string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Handle)
 	mod.httpServer.Handler = mux
+	return nil
 }
 
 //Start IModule   接口实现
@@ -56,8 +60,11 @@ func (mod *HTTPModule) Start() {
 		err := mod.httpServer.ListenAndServe()
 		if err != nil {
 			if err == http.ErrServerClosed {
+				loglogic.PStatus("Server closed under requeset!!")
 				// log.Print("Server closed under requeset!!")
 			} else {
+				loglogic.PFatal("Server closed unexpecteed:" + err.Error())
+
 				// log.Fatal("Server closed unexpecteed!!")
 			}
 
@@ -68,7 +75,7 @@ func (mod *HTTPModule) Start() {
 //Stop IModule 接口实现
 func (mod *HTTPModule) Stop() {
 	if err := mod.httpServer.Close(); err != nil {
-		log.Fatal("Close HttpModule:", err)
+		loglogic.PError("Close HttpModule:" + err.Error())
 	}
 	mod.wgmd.Wait()
 

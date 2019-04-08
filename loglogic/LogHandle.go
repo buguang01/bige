@@ -18,6 +18,7 @@ import (
 //如果设置了特殊监听的keyid，那会在之前的基础上，再加一个文件
 //会把那个文件的名字中日志等级的部分改成这个keyid
 type LogHandleModel struct {
+	LogName string            //这个日志频道的名字
 	LogChan chan *LogMsgModel //写日志的信道
 	Logger  *log.Logger       //写日志的系统对象
 	Logfile *os.File          //对应的日志文件
@@ -30,7 +31,11 @@ func NewLogHandle(dt time.Time, lv LogLevel, pathstr string) (result *LogHandleM
 	result = new(LogHandleModel)
 
 	result.LogChan = make(chan *LogMsgModel, 10)
-
+	if lv == LogLevelmainlevel {
+		result.LogName = "main"
+	} else {
+		result.LogName = GetLogNameByLogLevel(lv)
+	}
 	filename := fmt.Sprintf("%s_%02d.%02d.%02d.log",
 		GetFileNameByLogLevel(lv),
 		dt.Hour(),
@@ -65,10 +70,10 @@ func (lghd *LogHandleModel) handle() {
 	lghd.wg.Add(1)
 	defer lghd.wg.Done()
 	defer lghd.Logfile.Close()
-
+	msgstr := ""
 	for msg := range lghd.LogChan {
 		if msg.Stack == "" {
-			lghd.Logger.Output(2, fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d %s %s",
+			msgstr = fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d %s %s",
 				msg.CreateTime.Year(),
 				msg.CreateTime.Month(),
 				msg.CreateTime.Day(),
@@ -76,9 +81,10 @@ func (lghd *LogHandleModel) handle() {
 				msg.CreateTime.Minute(),
 				msg.CreateTime.Second(),
 				GetLogNameByLogLevel(msg.LogLv),
-				msg.Msg))
+				msg.Msg)
+
 		} else {
-			lghd.Logger.Println(fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d %s %s\r\n%v",
+			msgstr = fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d %s %s\r\n%v",
 				msg.CreateTime.Year(),
 				msg.CreateTime.Month(),
 				msg.CreateTime.Day(),
@@ -87,10 +93,14 @@ func (lghd *LogHandleModel) handle() {
 				msg.CreateTime.Second(),
 				GetLogNameByLogLevel(msg.LogLv),
 				msg.Msg,
-				msg.Stack))
+				msg.Stack)
+		}
+		lghd.Logger.Output(2, msgstr)
+		if lghd.LogName == "main" {
+			fmt.Println(msgstr)
 		}
 	}
-	fmt.Println("close handle")
+	// fmt.Println("close handle")
 }
 
 //Close 关闭本日志
