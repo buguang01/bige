@@ -12,6 +12,10 @@ QQ群号：441240897
 --------
 * [HTTPMoudle](https://github.com/buguang01/gsframe/blob/master/module/README_HTTP.md)
 
+使用的第三方库
+--------
+* mysql : go get -u github.com/go-sql-driver/mysql
+
 开发进度
 --------
 * 已完成的子功能：
