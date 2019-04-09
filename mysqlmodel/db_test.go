@@ -22,7 +22,6 @@ func init() {
 func TestDB(t *testing.T) {
 	loglogic.Init(0, "logs")
 	defer loglogic.LogClose()
-
 	db := DBExample.GetConnBegin()
 	defer func() {
 		if err := recover(); err != nil {
@@ -31,8 +30,9 @@ func TestDB(t *testing.T) {
 			db.Commit()
 		}
 	}()
-	db.Exec("insert into abtable (name) values(?)", "xiacs5")
-
-	db.Exec("insert into abtable (name) values(?)", "xiacs6")
-	db.Exec("insert into abtable  values(?)", "xiacs7")
+	r, err := db.Exec("insert into abtable (name) values(?)", "xiacs5")
+	_ = r
+	_ = err
+	db.Commit()
+	r, err = db.Exec("insert into abtable (name) values(?)", "xiacs6")
 }
