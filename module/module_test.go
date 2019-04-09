@@ -1,7 +1,6 @@
 package module_test
 
 import (
-	"buguang01/gsframe/configmodel"
 	"buguang01/gsframe/event"
 	"buguang01/gsframe/loglogic"
 	"buguang01/gsframe/module"
@@ -13,7 +12,7 @@ import (
 
 func TestModule(t *testing.T) {
 	loglogic.Init(0, "logs")
-	m := module.NewHTTPModule(&configmodel.HTTPConfig{
+	m := module.NewHTTPModule(&module.HTTPConfig{
 		HTTPAddr: ":8080",
 		Timeout:  10,
 	})

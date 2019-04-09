@@ -1,7 +1,6 @@
 package module
 
 import (
-	"buguang01/gsframe/configmodel"
 	"buguang01/gsframe/event"
 	"buguang01/gsframe/loglogic"
 	"encoding/json"
@@ -12,20 +11,26 @@ import (
 	"time"
 )
 
+//HTTPConfig httpmodule的配置
+type HTTPConfig struct {
+	HTTPAddr string //监听地址
+	Timeout  int32
+}
+
 //HTTPModule ...
 //http连接模块
 type HTTPModule struct {
-	HTTPAddr   string                  //HTTP监听的地址
-	httpServer *http.Server            //HTTP请求的对象
-	cg         *configmodel.HTTPConfig //从配置表中读进来的数据
-	wg         sync.WaitGroup          //用来确定是不是关闭了
+	HTTPAddr   string         //HTTP监听的地址
+	httpServer *http.Server   //HTTP请求的对象
+	cg         *HTTPConfig    //从配置表中读进来的数据
+	wg         sync.WaitGroup //用来确定是不是关闭了
 
 	RouteFun   func(code int32) event.IHTTPMsgEVent //用来生成事件处理器的工厂
 	TimeoutFun func(et event.IHTTPMsgEVent) []byte  //超时时的回调方法
 }
 
 //NewHTTPModule 生成一个新的HTTP的对象
-func NewHTTPModule(configmd *configmodel.HTTPConfig) *HTTPModule {
+func NewHTTPModule(configmd *HTTPConfig) *HTTPModule {
 	result := &HTTPModule{
 		cg:       configmd,
 		HTTPAddr: configmd.HTTPAddr,
