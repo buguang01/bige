@@ -153,9 +153,9 @@ func RemoveListenKeyID(keyid int) {
 }
 
 //PDebug 调试日志
-func PDebug(msgstr string) {
+func PDebug(msgstr string, a ...interface{}) {
 	PrintLog(&LogMsgModel{
-		Msg:   msgstr,
+		Msg:   fmt.Sprintf(msgstr, a...),
 		LogLv: LogLeveldebuglevel,
 		Stack: "",
 		KeyID: -1,
@@ -163,9 +163,9 @@ func PDebug(msgstr string) {
 }
 
 //PDebugKey 指定key的调试日志
-func PDebugKey(msgstr string, keyid int) {
+func PDebugKey(msgstr string, keyid int, a ...interface{}) {
 	PrintLog(&LogMsgModel{
-		Msg:   msgstr,
+		Msg:   fmt.Sprintf(msgstr, a...),
 		LogLv: LogLeveldebuglevel,
 		Stack: "",
 		KeyID: keyid,
@@ -173,9 +173,9 @@ func PDebugKey(msgstr string, keyid int) {
 }
 
 //PInfo 一般日志
-func PInfo(msgstr string) {
+func PInfo(msgstr string, a ...interface{}) {
 	PrintLog(&LogMsgModel{
-		Msg:   msgstr,
+		Msg:   fmt.Sprintf(msgstr, a...),
 		LogLv: LogLevelinfolevel,
 		Stack: "",
 		KeyID: -1,
@@ -183,9 +183,9 @@ func PInfo(msgstr string) {
 }
 
 //PInfoKey 指定key的一般日志
-func PInfoKey(msgstr string, keyid int) {
+func PInfoKey(msgstr string, keyid int, a ...interface{}) {
 	PrintLog(&LogMsgModel{
-		Msg:   msgstr,
+		Msg:   fmt.Sprintf(msgstr, a...),
 		LogLv: LogLevelinfolevel,
 		Stack: "",
 		KeyID: keyid,
@@ -193,9 +193,9 @@ func PInfoKey(msgstr string, keyid int) {
 }
 
 //PStatus 服务器状态日志
-func PStatus(msgstr string) {
+func PStatus(msgstr string, a ...interface{}) {
 	PrintLog(&LogMsgModel{
-		Msg:   msgstr,
+		Msg:   fmt.Sprintf(msgstr, a...),
 		LogLv: LogLevelstatuslevel,
 		Stack: "",
 		KeyID: -1,
@@ -203,9 +203,9 @@ func PStatus(msgstr string) {
 }
 
 //PStatusKey 指定key的服务器状态日志
-func PStatusKey(msgstr string, keyid int) {
+func PStatusKey(msgstr string, keyid int, a ...interface{}) {
 	PrintLog(&LogMsgModel{
-		Msg:   msgstr,
+		Msg:   fmt.Sprintf(msgstr, a...),
 		LogLv: LogLevelstatuslevel,
 		Stack: "",
 		KeyID: keyid,

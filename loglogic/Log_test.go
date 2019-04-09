@@ -1,26 +1,27 @@
-package loglogic
+package loglogic_test
 
 import (
+	"buguang01/gsframe/loglogic"
 	"testing"
 )
 
 func TestLog(t *testing.T) {
-	defer LogClose()
+	defer loglogic.LogClose()
 
 	defer func() {
 		r := recover()
 		if r != nil {
-			PError(r)
+			loglogic.PError(r)
 
 		}
 	}()
-	Init(20, "logs")
-	SetListenKeyID(1001)
-	PDebug("test1")
-	PInfo("test2")
-	PInfoKey("test3", 1001)
-	PDebugKey("test4", 1002)
-	PDebugKey("test5", 1001)
+	loglogic.Init(20, "logs")
+	loglogic.SetListenKeyID(1001)
+	loglogic.PDebug("test1")
+	loglogic.PInfo("test2")
+	loglogic.PInfoKey("test3", 1001)
+	loglogic.PDebugKey("test4", 1002)
+	loglogic.PDebugKey("test5", 1001)
 	//errs := fmt.Errorf(string(debug.Stack()))
 	panic("panicinfo")
 
