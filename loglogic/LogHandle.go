@@ -7,6 +7,8 @@ import (
 	"path"
 	"sync"
 	"time"
+
+	"github.com/gookit/color"
 )
 
 //LogHandleModel 写日志用的类，里面会自行维护要写到哪个文件里去；
@@ -97,7 +99,29 @@ func (lghd *LogHandleModel) handle() {
 		}
 		lghd.Logger.Output(2, msgstr)
 		if lghd.LogName == "main" {
-			fmt.Println(msgstr)
+			if msg.LogLv == LogLevelmainlevel {
+				color.White.Println(msgstr)
+			} else if msg.LogLv <= LogLeveldebuglevel {
+				color.Yellow.Println(msgstr)
+
+			} else if msg.LogLv <= LogLevelinfolevel {
+				color.Green.Println(msgstr)
+
+			} else if msg.LogLv <= LogLevelstatuslevel {
+				color.Gray.Println(msgstr)
+
+			} else if msg.LogLv <= LogLevelerrorlevel {
+				color.Magenta.Println(msgstr)
+
+			} else if msg.LogLv <= LogLevelfatallevel {
+				color.Red.Println(msgstr)
+
+			} else {
+				color.Normal.Println(msgstr)
+				// fmt.Println(msgstr)
+
+			}
+
 		}
 	}
 	// fmt.Println("close handle")

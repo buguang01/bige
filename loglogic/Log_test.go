@@ -15,7 +15,7 @@ func TestLog(t *testing.T) {
 
 		}
 	}()
-	loglogic.Init(20, "logs")
+	loglogic.Init(0, "logs")
 	loglogic.SetListenKeyID(1001)
 	loglogic.PDebug("test1")
 	loglogic.PInfo("test2")
