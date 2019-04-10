@@ -3,9 +3,9 @@ package runserver
 import "buguang01/gsframe/module"
 
 //GameConf 游戏服务器的配置
-type GameConf struct{
-	ServiceID int32//游戏服务器ID
-	
+type GameConfigModel struct {
+	ServiceID int32 //游戏服务器ID
+
 }
 
 //GameServiceBase 游戏模块管理
