@@ -1,6 +1,7 @@
 package runserver
 
 import (
+	"buguang01/gsframe/loglogic"
 	"buguang01/gsframe/module"
 	"os"
 	"os/signal"
@@ -50,9 +51,11 @@ Pstatus:
 		case <-c: //退出
 			break Pstatus
 		case <-t.C:
+			var ps string
 			for _, md := range gs.mlist {
-				md.PrintStatus()
+				ps += md.PrintStatus()
 			}
+			loglogic.PStatus(ps)
 		}
 	}
 	for i := len(gs.mlist) - 1; i >= 0; i-- {

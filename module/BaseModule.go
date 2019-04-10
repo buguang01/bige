@@ -9,5 +9,5 @@ type IModule interface {
 	//Stop 停止
 	Stop()
 	//PrintStatus 打印状态
-	PrintStatus()
+	PrintStatus() string
 }
