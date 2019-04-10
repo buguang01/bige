@@ -10,20 +10,23 @@ type GameConfigModel struct {
 
 //GameServiceBase 游戏模块管理
 type GameServiceBase struct {
-	mlist []*module.IModule
+	mlist []module.IModule
 }
 
+//NewGameService 生成一个新的游戏服务器
 func NewGameService() *GameServiceBase {
 	result := new(GameServiceBase)
-	result.mlist = make([]module, 0, 10) //一般一个服务器能开10个的话就很复杂了
+	result.mlist = make([]module.IModule, 0, 10) //一般一个服务器能开10个的话就很复杂了
 	return result
 }
 
-func (gs *GameServiceBase) AddModule(md *module.IModule) {
+//AddModule 给这个管理器，加新的模块
+func (gs *GameServiceBase) AddModule(md module.IModule) {
 	gs.mlist = append(gs.mlist, md)
 	md.Init()
 }
 
+//Run 运行游戏
 func (gs *GameServiceBase) Run() {
 	//
 	for _, md := range gs.mlist {
