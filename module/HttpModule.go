@@ -82,6 +82,7 @@ func (mod *HTTPModule) Start() {
 	go func() {
 		mod.wg.Add(1)
 		defer mod.wg.Done()
+		loglogic.PStatus("HTTP Module Start!")
 		err := mod.httpServer.ListenAndServe()
 		if err != nil {
 			if err == http.ErrServerClosed {
