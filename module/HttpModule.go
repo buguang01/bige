@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -24,6 +25,9 @@ type HTTPModule struct {
 	httpServer *http.Server   //HTTP请求的对象
 	cg         *HTTPConfig    //从配置表中读进来的数据
 	wg         sync.WaitGroup //用来确定是不是关闭了
+	getnum     int64          //收到的总消息数
+	runing     int64          //当前在处理的消息数
+	// failnum    int64          //发生问题的消息数
 
 	RouteFun   func(code int32) event.IHTTPMsgEVent //用来生成事件处理器的工厂
 	TimeoutFun func(et event.IHTTPMsgEVent) []byte  //超时时的回调方法
@@ -100,8 +104,19 @@ func (mod *HTTPModule) Stop() {
 	loglogic.PStatus("Http close")
 }
 
+//PrintStatus IModule 接口实现，打印状态
+func (mod *HTTPModule) PrintStatus() {
+	loglogic.PStatus(
+		"HTTP Module:	%d/%d	(get/runing)",
+		atomic.AddInt64(&mod.getnum, 0),
+		atomic.AddInt64(&mod.runing, 0))
+}
+
 //Handle http发来的所有请求都会到这个方法来
 func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
+	atomic.AddInt64(&mod.getnum, 1)
+	atomic.AddInt64(&mod.runing, 1)
+	defer atomic.AddInt64(&mod.runing, -1)
 	timeout := time.NewTicker(mod.httpServer.WriteTimeout - 2*time.Second)
 	v := req.FormValue("action")
 	if v == "" {
