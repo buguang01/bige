@@ -1,6 +1,7 @@
 package loglogic
 
 import (
+	"buguang01/gsframe/util"
 	"fmt"
 	"log"
 	"os"
@@ -31,7 +32,7 @@ type LogHandleModel struct {
 //NewLogHandle 开新的日志
 func NewLogHandle(dt time.Time, lv LogLevel, pathstr string) (result *LogHandleModel) {
 	result = new(LogHandleModel)
-
+	result.CurrDay = util.TimeConvert.GetDate(dt)
 	result.LogChan = make(chan *LogMsgModel, 10)
 	if lv == LogLevelmainlevel {
 		result.LogName = "main"
@@ -53,6 +54,7 @@ func NewLogHandle(dt time.Time, lv LogLevel, pathstr string) (result *LogHandleM
 //NewLogHandleByKeyID 开新的日志 用keyid来开
 func NewLogHandleByKeyID(dt time.Time, keyid int, pathstr string) (result *LogHandleModel) {
 	result = new(LogHandleModel)
+	result.CurrDay = util.TimeConvert.GetDate(dt)
 	result.LogChan = make(chan *LogMsgModel, 10)
 
 	filename := fmt.Sprintf("%d_%02d.%02d.%02d.log",
