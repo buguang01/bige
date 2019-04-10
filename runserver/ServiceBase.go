@@ -16,13 +16,14 @@ type GameConfigModel struct {
 //GameServiceBase 游戏模块管理
 type GameServiceBase struct {
 	mlist []module.IModule
-	cg    GameConfigModel
+	cg    *GameConfigModel
 }
 
 //NewGameService 生成一个新的游戏服务器
-func NewGameService() *GameServiceBase {
+func NewGameService(conf *GameConfigModel) *GameServiceBase {
 	result := new(GameServiceBase)
 	result.mlist = make([]module.IModule, 0, 10) //一般一个服务器能开10个的话就很复杂了
+	result.cg = conf
 	return result
 }
 
@@ -54,7 +55,6 @@ Pstatus:
 			}
 		}
 	}
-	<-c
 	for i := len(gs.mlist) - 1; i >= 0; i-- {
 		md := gs.mlist[i]
 		md.Stop()
