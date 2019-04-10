@@ -15,6 +15,8 @@ QQ群号：441240897
 使用的第三方库
 --------
 * mysql : go get -u github.com/go-sql-driver/mysql
+* redis : go get -u github.com/garyburd/redigo
+* 打印颜色：go get -u github.com/gookit/color
 
 开发进度
 --------
