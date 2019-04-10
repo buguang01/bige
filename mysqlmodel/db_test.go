@@ -19,7 +19,8 @@ func init() {
 	})
 }
 
-func TestDB(t *testing.T) {
+//写事务的方式
+func TestDBTran(t *testing.T) {
 	loglogic.Init(0, "logs")
 	defer loglogic.LogClose()
 	db := DBExample.GetConnBegin()
@@ -35,4 +36,8 @@ func TestDB(t *testing.T) {
 	_ = err
 	db.Commit()
 	r, err = db.Exec("insert into abtable (name) values(?)", "xiacs6")
+}
+
+func TestQuery(t *testing.T) {
+
 }

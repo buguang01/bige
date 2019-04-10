@@ -15,16 +15,16 @@ var (
 	logExample *LogManageModel
 )
 
-func init() {
-	logExample = &LogManageModel{
-		MiniLv:        LogLeveldebuglevel,
-		PathStr:       "logs",
-		LogList:       make(map[LogLevel]*LogHandleModel),
-		LogKeyList:    make(map[int]*LogHandleModel),
-		ListenKeyList: make(map[int]bool),
-		msgchan:       make(chan *LogMsgModel, 10),
-	}
-}
+// func init() {
+// 	// logExample = &LogManageModel{
+// 	// 	MiniLv:        LogLeveldebuglevel,
+// 	// 	PathStr:       "logs",
+// 	// 	LogList:       make(map[LogLevel]*LogHandleModel),
+// 	// 	LogKeyList:    make(map[int]*LogHandleModel),
+// 	// 	ListenKeyList: make(map[int]bool),
+// 	// 	msgchan:       make(chan *LogMsgModel, 10),
+// 	// }
+// }
 
 //LogManageModel 日志管理器
 type LogManageModel struct {
@@ -42,9 +42,14 @@ type LogManageModel struct {
 
 //Init 初始化日志管理器的参数
 func Init(minlv LogLevel, pathstr string) {
+	logExample = new(LogManageModel)
 	logExample.MiniLv = minlv
 	logExample.PathStr = pathstr
 	logExample.CurrDay = util.TimeConvert.GetMinDateTime()
+	logExample.LogList = make(map[LogLevel]*LogHandleModel)
+	logExample.LogKeyList = make(map[int]*LogHandleModel)
+	logExample.ListenKeyList = make(map[int]bool)
+	logExample.msgchan = make(chan *LogMsgModel, 10)
 	go logExample.Handle()
 }
 
