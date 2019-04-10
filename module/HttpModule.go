@@ -40,7 +40,7 @@ func NewHTTPModule(configmd *HTTPConfig) *HTTPModule {
 }
 
 //Init IModule接口的实现
-func (mod *HTTPModule) Init() error {
+func (mod *HTTPModule) Init() {
 	// if configpath == "" {
 	// 	configpath = "config/http.json"
 	// }
@@ -69,7 +69,6 @@ func (mod *HTTPModule) Init() error {
 	//你也可以在外面继续扩展
 
 	mod.httpServer.Handler = mux
-	return nil
 }
 
 //Start IModule   接口实现
