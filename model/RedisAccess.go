@@ -74,7 +74,7 @@ type RedisHandleModel struct {
 }
 
 //Set 写入指定的KEY，val，还有时间dt；如果dt==-1，表示没有时间
-func (rd *RedisHandleModel) Set(key, val string, dt int64) (reply interface{}, err error) {
+func (rd *RedisHandleModel) Set(key string, val interface{}, dt int64) (reply interface{}, err error) {
 	if dt > 0 {
 		return rd.Do("set", key, val, "EX", dt)
 	}
@@ -88,7 +88,7 @@ func (rd *RedisHandleModel) Get(key string) (reply interface{}, err error) {
 }
 
 //DictSet 写入指定(字典\map)表中的指定的KEY，val，还有时间dt；如果dt==-1，表示没有时间
-func (rd *RedisHandleModel) DictSet(dname, key, val string, dt int64) (reply interface{}, err error) {
+func (rd *RedisHandleModel) DictSet(dname, key string, val interface{}, dt int64) (reply interface{}, err error) {
 	if dt > 0 {
 		return rd.Do("hset", dname, key, val, "EX", dt)
 	}
