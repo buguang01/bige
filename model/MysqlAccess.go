@@ -39,6 +39,7 @@ func NewMysqlAccess(cgmodel *MysqlConfigModel) *MysqlAccess {
 		loglogic.PFatal(err)
 		panic(err)
 	}
+	loglogic.PDebug("mysql init.")
 	return result
 }
 
@@ -65,4 +66,5 @@ func (access *MysqlAccess) GetDB() *sql.DB {
 //Close 关闭池子,只有关服的时候，才会用到这个，一般不用也没有关系，也会自己关闭的
 func (access *MysqlAccess) Close() {
 	access.DBConobj.Close()
+	loglogic.PDebug("mysql close.")
 }

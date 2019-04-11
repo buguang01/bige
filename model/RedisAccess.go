@@ -1,6 +1,7 @@
 package model
 
 import (
+	"buguang01/gsframe/loglogic"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -46,10 +47,12 @@ func (access *RedisAccess) dial() (redis.Conn, error) {
 		c.Close()
 		return nil, err
 	}
+	loglogic.PDebug("redis dial.")
 	return c, err
 }
 
 func (access *RedisAccess) testOnBorrow(c redis.Conn, t time.Time) error {
+	loglogic.PDebug("redis testOnBorrow.")
 	if time.Since(t) < time.Minute {
 		return nil
 	}
