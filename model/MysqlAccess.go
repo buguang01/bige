@@ -90,7 +90,7 @@ type ReadRow struct {
 func (read *ReadRow) Read() bool {
 	ok := read.Rows.Next()
 	scanargs := make([]interface{}, len(read.Columns))
-	for i := 0; i <= len(read.Columns); i++ {
+	for i := 0; i < len(read.Columns); i++ {
 		scanargs[i] = &read.Data[i]
 	}
 	if ok {
