@@ -1,18 +1,18 @@
-package mysqlmodel_test
+package model_test
 
 import (
 	"buguang01/gsframe/loglogic"
-	"buguang01/gsframe/mysqlmodel"
+	"buguang01/gsframe/model"
 	"testing"
 )
 
 var (
 	//不管是什么模式，都需要一个全局的变量来放连接
-	DBExample *mysqlmodel.MysqlAccess
+	DBExample *model.MysqlAccess
 )
 
 func init() {
-	DBExample = mysqlmodel.NewMysqlAccess(&mysqlmodel.MysqlConfigModel{
+	DBExample = model.NewMysqlAccess(&model.MysqlConfigModel{
 		Dsn:        "root:6JkZsIybo25ls81a@tcp(192.168.39.97:3306)/test?charset=utf8",
 		MaxOpenNum: 2000,
 		MaxIdleNum: 1000,
