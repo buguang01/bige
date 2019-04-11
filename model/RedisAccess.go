@@ -39,6 +39,9 @@ func (access *RedisAccess) dial() (redis.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
+	if access.cg.Password == "" {
+		return c, err
+	}
 	if _, err := c.Do("AUTH", access.cg.Password); err != nil {
 		c.Close()
 		return nil, err
