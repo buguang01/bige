@@ -41,6 +41,7 @@ func (access *RedisAccess) dial() (redis.Conn, error) {
 		return nil, err
 	}
 	if access.cg.Password == "" {
+		loglogic.PDebug("redis dial.")
 		return c, err
 	}
 	if _, err := c.Do("AUTH", access.cg.Password); err != nil {
