@@ -59,6 +59,7 @@ func (et *MsgEventBase) GetHash() string {
 //IHTTPMsgEVent 如果是HTTP的收到的事件需要这个这个接口
 //因为http的请求需要直接回复
 type IHTTPMsgEVent interface {
+	IMsgEvent
 	HTTPGetMsgHandle() <-chan []byte //在HTTP的协程上调用的方法，返回一个在处理完后返回到这个协程的信道
 }
 

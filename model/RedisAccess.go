@@ -70,6 +70,8 @@ func (access *RedisAccess) GetConn() *RedisHandleModel {
 //Close 关闭池子，一般只有关服的时候才用到
 func (access *RedisAccess) Close() {
 	access.DBConobj.Close()
+	loglogic.PDebug("redis close.")
+
 }
 
 //RedisHandleModel 自己把reids的一些常用命令写在这里

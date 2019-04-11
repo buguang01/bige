@@ -68,3 +68,39 @@ func (access *MysqlAccess) Close() {
 	access.DBConobj.Close()
 	loglogic.PDebug("mysql close.")
 }
+
+//NewRead 出一个读取器
+func NewRead(rows *sql.Rows) *ReadRow {
+	result := new(ReadRow)
+	result.Rows = rows
+	result.Columns, _ = rows.Columns()
+	result.Data = make([]interface{}, len(result.Columns))
+	return result
+}
+
+//ReadRow 行读取器
+type ReadRow struct {
+	Rows    *sql.Rows
+	Columns []string      //列
+	Data    []interface{} //数据
+
+}
+
+//Read 读下一行
+func (read *ReadRow) Read() bool {
+	ok := read.Rows.Next()
+	if ok {
+		read.Rows.Scan(read.Data...)
+	}
+	return ok
+}
+
+//GetRowByColName 拿当前行的指定列
+func (read *ReadRow) GetRowByColName(colname string) interface{} {
+	for i, col := range read.Columns {
+		if col == colname {
+			return read.Data[i]
+		}
+	}
+	return nil
+}
