@@ -59,11 +59,44 @@ func (access *RedisAccess) testOnBorrow(c redis.Conn, t time.Time) error {
 
 //GetConn 拿到一个可用的连接，你要在这句之后写上：defer conn.Close()
 //用来在使用完之后把连接放回池子里去
-func (access *RedisAccess) GetConn() redis.Conn {
-	return access.DBConobj.Get()
+func (access *RedisAccess) GetConn() *RedisHandleModel {
+	return &RedisHandleModel{access.DBConobj.Get()}
 }
 
 //Close 关闭池子，一般只有关服的时候才用到
 func (access *RedisAccess) Close() {
 	access.DBConobj.Close()
+}
+
+//RedisHandleModel 自己把reids的一些常用命令写在这里
+type RedisHandleModel struct {
+	redis.Conn
+}
+
+//Set 写入指定的KEY，val，还有时间dt；如果dt==-1，表示没有时间
+func (rd *RedisHandleModel) Set(key, val string, dt int64) (reply interface{}, err error) {
+	if dt > 0 {
+		return rd.Do("set", key, val, "EX", dt)
+	}
+	return rd.Do("set", key, val)
+
+}
+
+//Get 读指定key的值
+func (rd *RedisHandleModel) Get(key string) (reply interface{}, err error) {
+	return rd.Do("get", key)
+}
+
+//DictSet 写入指定(字典\map)表中的指定的KEY，val，还有时间dt；如果dt==-1，表示没有时间
+func (rd *RedisHandleModel) DictSet(dname, key, val string, dt int64) (reply interface{}, err error) {
+	if dt > 0 {
+		return rd.Do("hset", dname, key, val, "EX", dt)
+	}
+	return rd.Do("hset", dname, key, val)
+
+}
+
+//DictGet 读指定(字典\map)表中的指定key的值
+func (rd *RedisHandleModel) DictGet(dname, key string) (reply interface{}, err error) {
+	return rd.Do("get", dname, key)
 }
