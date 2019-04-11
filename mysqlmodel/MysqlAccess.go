@@ -42,6 +42,11 @@ func NewMysqlAccess(cgmodel *MysqlConfigModel) *MysqlAccess {
 	return result
 }
 
+//Ping 确认一下数据库连接
+func (access *MysqlAccess) Ping() error {
+	return access.DBConobj.Ping()
+}
+
 //GetConnBegin 拿到事件连接对象，不用的时候需要执行 Commit()或Rollback()
 func (access *MysqlAccess) GetConnBegin() *sql.Tx {
 	result, err := access.DBConobj.Begin()
