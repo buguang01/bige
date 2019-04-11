@@ -78,7 +78,7 @@ func (lgmd *LogManageModel) Handle() {
 		//如果有设置keyid就检查一下这个keyid要不要写日志
 		if msg.KeyID != -1 {
 			if _, ok := lgmd.ListenKeyList[msg.KeyID]; ok {
-				lghd = lgmd.getLogHandleByKeyID(msg.KeyID)
+				lghd = lgmd.getLogHandleByKeyID(msg.KeyID, msg.CreateTime)
 				lghd.LogChan <- msg
 			}
 		}
@@ -88,10 +88,10 @@ func (lgmd *LogManageModel) Handle() {
 		}
 
 		//拿到目标日志对象
-		lghd = lgmd.getLogModel(msg.LogLv)
+		lghd = lgmd.getLogModel(msg.LogLv, msg.CreateTime)
 		lghd.LogChan <- msg
 		//写入主日志文件
-		lghd = lgmd.getLogModel(0)
+		lghd = lgmd.getLogModel(0, msg.CreateTime)
 		lghd.LogChan <- msg
 
 	}
@@ -113,31 +113,31 @@ func (lgmd *LogManageModel) checkDir(d time.Time) {
 }
 
 //getLogModel 拿到要写日志的对象
-func (lgmd *LogManageModel) getLogModel(lv LogLevel) (result *LogHandleModel) {
+func (lgmd *LogManageModel) getLogModel(lv LogLevel, dt time.Time) (result *LogHandleModel) {
 
 	result, ok := lgmd.LogList[lv]
 	if !ok {
 		//基本就是拿不到那个对象，需要新建一个
-		result = NewLogHandle(util.TimeConvert.GetCurrTime(), lv, lgmd.CurrDir)
+		result = NewLogHandle(dt, lv, lgmd.CurrDir)
 		lgmd.LogList[lv] = result
 	} else if result.CurrDay != lgmd.CurrDay {
 		result.Close()
-		result = NewLogHandle(util.TimeConvert.GetCurrTime(), lv, lgmd.CurrDir)
+		result = NewLogHandle(dt, lv, lgmd.CurrDir)
 		lgmd.LogList[lv] = result
 	}
 	return result
 }
 
 //getLogHandleByKeyID 拿到要写日志的对象，指定KEYID
-func (lgmd *LogManageModel) getLogHandleByKeyID(keyid int) (result *LogHandleModel) {
+func (lgmd *LogManageModel) getLogHandleByKeyID(keyid int, dt time.Time) (result *LogHandleModel) {
 	result, ok := lgmd.LogKeyList[keyid]
 	if !ok {
 		//基本就是拿不到那个对象，需要新建一个
-		result = NewLogHandleByKeyID(util.TimeConvert.GetCurrTime(), keyid, lgmd.CurrDir)
+		result = NewLogHandleByKeyID(dt, keyid, lgmd.CurrDir)
 		lgmd.LogKeyList[keyid] = result
 	} else if result.CurrDay != lgmd.CurrDay {
 		result.Close()
-		result = NewLogHandleByKeyID(util.TimeConvert.GetCurrTime(), keyid, lgmd.CurrDir)
+		result = NewLogHandleByKeyID(dt, keyid, lgmd.CurrDir)
 		lgmd.LogKeyList[keyid] = result
 	}
 	return result
