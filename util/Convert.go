@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 )
 
@@ -34,4 +35,24 @@ func (convert) ToString(v interface{}) string {
 	}
 	panic(fmt.Sprintf("%#v to string fail.", v))
 
+}
+
+func (convert) ByteToAll(src []byte, dest interface{}) {
+	s := string(src)
+	dpv := reflect.ValueOf(dest)
+	dv := reflect.Indirect(dpv)
+	switch dest.(type) {
+	case *string:
+		dv.SetString(s)
+
+	case *int32, *int, *int64:
+		in64, _ := strconv.ParseInt(s, 10, dv.Type().Bits())
+		dv.SetInt(in64)
+		// case *int:
+		// 	in64, _ := strconv.ParseInt(s, 10, dv.Type().Bits())
+		// 	dest = int(in64)
+		// case *int64:
+		// 	in64, _ := strconv.ParseInt(s, 10, dv.Type().Bits())
+		// 	dest = int64(in64)
+	}
 }
