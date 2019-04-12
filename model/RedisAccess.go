@@ -104,5 +104,5 @@ func (rd *RedisHandleModel) DictSet(dname, key string, val interface{}, dt int64
 
 //DictGet 读指定(字典\map)表中的指定key的值
 func (rd *RedisHandleModel) DictGet(dname, key string) (reply interface{}, err error) {
-	return rd.Do("get", dname, key)
+	return rd.Do("hget", dname, key)
 }
