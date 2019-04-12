@@ -103,7 +103,7 @@ func (read *ReadRow) Read() bool {
 func (read *ReadRow) GetRowByColName(colname string) []byte {
 	for i, col := range read.Columns {
 		if col == colname {
-			return read.Data[i]
+			return read.Data[i].([]byte)
 		}
 	}
 	return nil
