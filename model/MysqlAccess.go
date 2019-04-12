@@ -100,7 +100,7 @@ func (read *ReadRow) Read() bool {
 }
 
 //GetRowByColName 拿当前行的指定列
-func (read *ReadRow) GetRowByColName(colname string) interface{} {
+func (read *ReadRow) GetRowByColName(colname string) []byte {
 	for i, col := range read.Columns {
 		if col == colname {
 			return read.Data[i]
