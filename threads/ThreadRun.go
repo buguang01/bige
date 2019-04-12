@@ -4,6 +4,11 @@ import (
 	"buguang01/gsframe/loglogic"
 )
 
+//GoTry 在新线程上跑
+func GoTry(f func(), catch func(), finally func()) {
+	go Try(f, catch, finally)
+}
+
 //Try C#中 的try
 func Try(f func(), catch func(), finally func()) {
 	defer func() {
@@ -30,6 +35,7 @@ type ThreadRun struct {
 }
 
 //NewGoRun 开一个新的协程并运行它
+//在新协程上调用f ，resultf回到主线程的方法
 func NewGoRun(f func(), resultf func()) *ThreadRun {
 	result := new(ThreadRun)
 	result.Chanresult = make(chan func(), 1)
@@ -53,5 +59,4 @@ func (this *ThreadRun) Go(f func(), resultf func()) {
 			close(this.Chanresult)
 		})
 	}()
-
 }
