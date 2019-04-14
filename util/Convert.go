@@ -17,6 +17,8 @@ func (convert) ToInt32(v interface{}) int32 {
 	case string:
 		result, _ := strconv.ParseInt(v.(string), 10, 32)
 		return int32(result)
+	case float64:
+		return int32(v.(float64))
 	}
 	panic(fmt.Sprintf("%#v to int32 fail.", v))
 }

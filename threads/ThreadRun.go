@@ -2,6 +2,8 @@ package threads
 
 import (
 	"buguang01/gsframe/loglogic"
+	"sync"
+	"time"
 )
 
 //GoTry 在新线程上跑
@@ -29,7 +31,7 @@ func Try(f func(), catch func(), finally func()) {
 
 }
 
-//ThreadRun 新开协程的类
+//ThreadRun 新开协程的类有回调用的
 type ThreadRun struct {
 	Chanresult chan func()
 }
@@ -53,10 +55,71 @@ func NewGo() *ThreadRun {
 
 //Go 在新协程上调用f ，resultf回到主线程的方法
 func (this *ThreadRun) Go(f func(), resultf func()) {
-	go func() {
-		Try(f, nil, func() {
-			this.Chanresult <- resultf
-			close(this.Chanresult)
+	GoTry(f, nil, func() {
+		this.Chanresult <- resultf
+		close(this.Chanresult)
+	})
+}
+
+//ThreadGo 子协程管理计数，可以等子协程都完成
+//用它来管理所有开的协程，需要等这些线程都跑完
+type ThreadGo struct {
+	Wg sync.WaitGroup //等待
+}
+
+//Go 在当前线程上跑
+func (this *ThreadGo) Go(f func()) {
+	this.Wg.Add(1)
+	GoTry(
+		f,
+		nil,
+		func() {
+			defer this.Wg.Done()
 		})
-	}()
+}
+
+//GoTry 在新协程上跑
+func (this *ThreadGo) GoTry(f func(), catch func(), finally func()) {
+	this.Wg.Add(1)
+	GoTry(
+		f,
+		catch,
+		func() {
+			defer this.Wg.Done()
+			if finally != nil {
+				finally()
+			}
+		})
+}
+
+//Try 在当前协程上跑
+func (this *ThreadGo) Try(f func(), catch func(), finally func()) {
+	this.Wg.Add(1)
+	Try(
+		f,
+		catch,
+		func() {
+			defer this.Wg.Done()
+			if finally != nil {
+				finally()
+			}
+		})
+}
+
+func TimeoutGo(f func(), ticker time.Ticker, timeoutfunc func()) {
+	result := make(chan struct{})
+
+	GoTry(f, nil, func() {
+		result <- struct{}{}
+		close(result)
+	})
+	select {
+	case <-result:
+
+	case <-ticker.C:
+		//写一些一定要打印的信息
+		if timeoutfunc != nil {
+			timeoutfunc()
+		}
+	}
 }

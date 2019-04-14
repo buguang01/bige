@@ -3,10 +3,10 @@ package module
 import (
 	"buguang01/gsframe/event"
 	"buguang01/gsframe/loglogic"
+	"buguang01/gsframe/threads"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -29,8 +29,8 @@ type HTTPModule struct {
 	runing     int64          //当前在处理的消息数
 	// failnum    int64          //发生问题的消息数
 
-	RouteFun   func(code int32) event.IHTTPMsgEVent //用来生成事件处理器的工厂
-	TimeoutFun func(et event.IHTTPMsgEVent) []byte  //超时时的回调方法
+	RouteFun   func(code int32) event.HTTPcall //用来生成事件处理器的工厂
+	TimeoutFun event.HTTPcall                  //超时时的回调方法
 }
 
 //NewHTTPModule 生成一个新的HTTP的对象
@@ -45,20 +45,6 @@ func NewHTTPModule(configmd *HTTPConfig) *HTTPModule {
 
 //Init IModule接口的实现
 func (mod *HTTPModule) Init() {
-	// if configpath == "" {
-	// 	configpath = "config/http.json"
-	// }
-	// filedb, err := ioutil.ReadFile(configpath)
-	// if err != nil {
-	// 	//有问题就要退出的
-	// 	loglogic.PFatal(err)
-	// 	return err
-	// }
-	// if err = json.Unmarshal([]byte(filedb), &mod.cg); err != nil {
-	// 	//有问题就要退出
-	// 	loglogic.PFatal(err)
-	// 	return err
-	// }
 
 	mod.httpServer = &http.Server{
 		Addr:         mod.cg.HTTPAddr,
@@ -73,6 +59,8 @@ func (mod *HTTPModule) Init() {
 	//你也可以在外面继续扩展
 
 	mod.httpServer.Handler = mux
+
+	mod.TimeoutFun = TimeoutRun
 }
 
 //Start IModule   接口实现
@@ -102,7 +90,7 @@ func (mod *HTTPModule) Stop() {
 		loglogic.PError("Close HttpModule:" + err.Error())
 	}
 	mod.wg.Wait()
-	loglogic.PStatus("Http close")
+	loglogic.PStatus("HTTP Module Stop")
 }
 
 //PrintStatus IModule 接口实现，打印状态
@@ -115,53 +103,64 @@ func (mod *HTTPModule) PrintStatus() string {
 
 //Handle http发来的所有请求都会到这个方法来
 func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
+	mod.wg.Add(1)
+	defer mod.wg.Done()
 	atomic.AddInt64(&mod.getnum, 1)
 	atomic.AddInt64(&mod.runing, 1)
 	defer atomic.AddInt64(&mod.runing, -1)
 	timeout := time.NewTicker(mod.httpServer.WriteTimeout - 2*time.Second)
-	v := req.FormValue("action")
-	if v == "" {
-		w.Write([]byte("nothing action!!!"))
+	request := req.FormValue("json")
+	etjs := make(event.JsonMap)
+	err := json.Unmarshal([]byte(request), &etjs)
+	if err != nil {
+		w.Write([]byte("json error."))
 		return
 	}
-	action, _ := strconv.Atoi(v)
-	loglogic.PDebug(req.URL.String())
+	action := etjs.GetAction()
+	loglogic.PInfo(request)
+	threads.Try(
+		func() {
+			call := mod.RouteFun(action)
+			if call == nil {
+				loglogic.PInfo("nothing action:%d!", action)
+				w.Write([]byte("nothing action"))
+			} else {
+				g := threads.NewGoRun(
+					func() {
+						call(etjs, w)
+					},
+					nil)
+				select {
+				case <-g.Chanresult:
+					//上面那个运行完了
+					break
+				case <-timeout.C:
+					//上面那个可能还没有运行完，但是超时了要返回了
+					loglogic.PDebug("http time msg:%s", request)
+					if mod.TimeoutFun != nil {
+						mod.TimeoutFun(etjs, w)
+					}
+					break
+				}
+				//调用委托好的消息处理方法
+			}
+		},
+		func() {
+			//如果出异常了，跑这里
+			w.Write([]byte("catch!"))
+		},
+		nil)
 
-	etdata := mod.RouteFun(int32(action))
-	if etdata == nil {
-		//没拿到就是没有定义过这个消息
-		loglogic.PStatus("Undefined action:%d", action)
-		w.Write([]byte(fmt.Sprintf("Undefined action:%d", action)))
-		return
-	}
-	dval := req.FormValue("jsdata")
-	if dval == "" {
-		w.Write([]byte("nothing jsdata!!!"))
-		return
-	}
-	if err := json.Unmarshal([]byte(dval), etdata); err != nil {
-		loglogic.PStatus("json Unmarshal error:%v", err)
-		w.Write([]byte("json Unmarshal fail!"))
-		return
-	}
-	if int32(action) != etdata.(event.IMsgEvent).GetAction() {
-		loglogic.PStatus("action error Url:%s", req.URL)
-		w.Write([]byte("action error!"))
-		return
+	// w.Write(mod.TimeoutFun(etdata))
 
-	}
-	resultchan := etdata.HTTPGetMsgHandle()
-	select {
-	case d := <-resultchan:
-		w.Write(d)
-
-	case <-timeout.C:
-		w.Write(mod.TimeoutFun(etdata))
-
-	}
 }
 
 //NullHandle 默认的所有没定义的处理请求
 func NullHandle(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Hello world!"))
+}
+
+//TimeoutRun 默认的超时调用
+func TimeoutRun(et event.JsonMap, w http.ResponseWriter) {
+	event.HTTPReplyMsg(w, et, -1, nil)
 }
