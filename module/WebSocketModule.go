@@ -154,11 +154,31 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 		loglogic.PInfo("websocket client close.")
 	}()
 	loglogic.PInfo("websocket client open!")
+	runchan := make(chan bool, 8) //用来处理超时
+	threads.GoTry(
+		func() {
+			timeout := time.NewTicker(time.Duration(mod.cg.Timeout) * time.Second)
+			for {
+				select {
+				case <-timeout.C:
+					conn.Close()
+				case ok := <-runchan:
+					if ok {
+						timeout = time.NewTicker(time.Duration(mod.cg.Timeout) * time.Second)
+					} else {
+						return
+					}
+				}
+			}
+
+			//超时关连接
+		}, nil, nil)
 listen:
 	for {
 		readLen, err := conn.Read(request)
 		if err != nil {
 			if err == io.EOF {
+				runchan <- false
 				//fmt.Println("客户端断开链接，")
 				break listen
 			} else {
@@ -177,6 +197,7 @@ listen:
 		if call == nil {
 			loglogic.PInfo("nothing action:%d!", code)
 		} else {
+			runchan <- true
 			call(etjs, wsconn, runobj) //调用委托的消息处理方法
 		}
 
