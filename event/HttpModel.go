@@ -1,6 +1,7 @@
 package event
 
 import (
+	"buguang01/gsframe/loglogic"
 	"encoding/json"
 	"net/http"
 )
@@ -20,5 +21,6 @@ func HTTPReplyMsg(w http.ResponseWriter, et JsonMap, resultcom int32, jsdata int
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
+	loglogic.PInfo(string(b))
 	w.Write(b)
 }

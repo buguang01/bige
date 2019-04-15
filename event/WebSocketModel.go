@@ -1,6 +1,7 @@
 package event
 
 import (
+	"buguang01/gsframe/loglogic"
 	"buguang01/gsframe/threads"
 	"encoding/json"
 
@@ -32,6 +33,7 @@ func WebSocketReplyMsg(wsmd *WebSocketModel, et JsonMap, resultcom int32, jsdata
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
+	loglogic.PInfo(string(b))
 	wsmd.Write(b)
 }
 
@@ -47,5 +49,6 @@ func WebSocketSendMsg(wsmd *WebSocketModel, action int32, jsdata interface{}) {
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
+	loglogic.PInfo(string(b))
 	wsmd.Write(b)
 }
