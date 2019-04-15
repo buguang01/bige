@@ -53,5 +53,5 @@ func (js JsonMap) GetMemberID() int32 {
 
 //GetHash string     //发回给用户信息用的钥匙
 func (js JsonMap) GetHash() uint32 {
-	return uint32(util.Convert.ToInt32(js["HASH"]))
+	return uint32(js["HASH"].(float64))
 }
