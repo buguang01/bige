@@ -145,7 +145,8 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 				//调用委托好的消息处理方法
 			}
 		},
-		func() {
+		func(err interface{}) {
+			loglogic.PFatal(err)
 			//如果出异常了，跑这里
 			w.Write([]byte("catch!"))
 		},

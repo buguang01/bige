@@ -7,12 +7,12 @@ import (
 )
 
 //GoTry 在新线程上跑
-func GoTry(f func(), catch func(), finally func()) {
+func GoTry(f func(), catch func(interface{}), finally func()) {
 	go Try(f, catch, finally)
 }
 
 //Try C#中 的try
-func Try(f func(), catch func(), finally func()) {
+func Try(f func(), catch func(interface{}), finally func()) {
 	defer func() {
 		if finally != nil {
 			finally()
@@ -21,7 +21,7 @@ func Try(f func(), catch func(), finally func()) {
 	defer func() {
 		if err := recover(); err != nil {
 			if catch != nil {
-				catch()
+				catch(err)
 			} else {
 				loglogic.PFatal(err)
 			}
@@ -79,7 +79,7 @@ func (this *ThreadGo) Go(f func()) {
 }
 
 //GoTry 在新协程上跑
-func (this *ThreadGo) GoTry(f func(), catch func(), finally func()) {
+func (this *ThreadGo) GoTry(f func(), catch func(interface{}), finally func()) {
 	this.Wg.Add(1)
 	GoTry(
 		f,
@@ -93,7 +93,7 @@ func (this *ThreadGo) GoTry(f func(), catch func(), finally func()) {
 }
 
 //Try 在当前协程上跑
-func (this *ThreadGo) Try(f func(), catch func(), finally func()) {
+func (this *ThreadGo) Try(f func(), catch func(interface{}), finally func()) {
 	this.Wg.Add(1)
 	Try(
 		f,
