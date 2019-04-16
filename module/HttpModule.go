@@ -132,6 +132,7 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 					nil)
 				select {
 				case <-g.Chanresult:
+					timeout.Stop()
 					//上面那个运行完了
 					break
 				case <-timeout.C:

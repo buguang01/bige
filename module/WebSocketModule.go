@@ -164,6 +164,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 					conn.Close()
 				case ok := <-runchan:
 					if ok {
+						timeout.Stop()
 						timeout = time.NewTicker(time.Duration(mod.cg.Timeout) * time.Second)
 					} else {
 						return
@@ -173,64 +174,71 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 
 			//超时关连接
 		}, nil, nil)
-listen:
-	for {
-		readLen, err := conn.Read(request)
-		if err != nil {
-			if err == io.EOF {
-				runchan <- false
-				//fmt.Println("客户端断开链接，")
-				break listen
-			} else {
-				fmt.Println(err)
+	threads.Try(
+		func() {
+		listen:
+			for {
+				readLen, err := conn.Read(request)
+				if err != nil {
+					if err == io.EOF {
+						runchan <- false
+						//fmt.Println("客户端断开链接，")
+						break listen
+					} else {
+						fmt.Println(err)
+					}
+				}
+				loglogic.PInfo(string(request[:readLen]))
+				etjs := make(event.JsonMap)
+				err = json.Unmarshal(request[:readLen], &etjs)
+				if err != nil {
+					break listen
+				}
+				atomic.AddInt64(&mod.getnum, 1)
+				code := util.Convert.ToInt32(etjs["ACTION"]) //可能会出错，不知道有没有捕获
+				call := mod.RouteFun(code)
+				if call == nil {
+					loglogic.PInfo("nothing action:%d!", code)
+				} else {
+					runchan <- true
+					call(etjs, wsconn, runobj) //调用委托的消息处理方法
+				}
 			}
-		}
-		loglogic.PInfo(string(request[:readLen]))
-		etjs := make(event.JsonMap)
-		err = json.Unmarshal(request[:readLen], &etjs)
-		if err != nil {
-			break listen
-		}
-		atomic.AddInt64(&mod.getnum, 1)
-		code := util.Convert.ToInt32(etjs["ACTION"]) //可能会出错，不知道有没有捕获
-		call := mod.RouteFun(code)
-		if call == nil {
-			loglogic.PInfo("nothing action:%d!", code)
-		} else {
-			runchan <- true
-			call(etjs, wsconn, runobj) //调用委托的消息处理方法
-		}
+		},
+		nil,
+		nil,
+	)
 
-		// msgbuff = append(msgbuff, request[:readLen]...)
-		// for {
-		// 	//也有可能一次收到好几条消息
-		// 	msglen := int(binary.BigEndian.Uint16(msgbuff))
-		// 	if msglen > mod.cg.MsgMaxLen {
-		// 		//消息太长
-		// 		break listen
-		// 	}
-		// 	//消息完整了，就可以开始处理
-		// 	if len(msgbuff) < msglen {
-		// 		continue listen
-		// 	}
-		// 	etjs := make(map[string]interface{})
-		// 	err = json.Unmarshal(msgbuff[2:msglen], &etjs)
-		// 	if err != nil {
-		// 		break listen
-		// 	}
-		// 	//已解出来消息要从缓存中去掉
-		// 	msgbuff = append(msgbuff[msglen:])
+	// msgbuff = append(msgbuff, request[:readLen]...)
+	// for {
+	// 	//也有可能一次收到好几条消息
+	// 	msglen := int(binary.BigEndian.Uint16(msgbuff))
+	// 	if msglen > mod.cg.MsgMaxLen {
+	// 		//消息太长
+	// 		break listen
+	// 	}
+	// 	//消息完整了，就可以开始处理
+	// 	if len(msgbuff) < msglen {
+	// 		continue listen
+	// 	}
+	// 	etjs := make(map[string]interface{})
+	// 	err = json.Unmarshal(msgbuff[2:msglen], &etjs)
+	// 	if err != nil {
+	// 		break listen
+	// 	}
+	// 	//已解出来消息要从缓存中去掉
+	// 	msgbuff = append(msgbuff[msglen:])
 
-		// 	atomic.AddInt64(&mod.getnum, 1)
-		// 	code := util.Convert.ToInt32(etjs["ACTION"]) //可能会出错，不知道有没有捕获
-		// 	call := mod.RouteFun(code)
-		// 	if call == nil {
-		// 		loglogic.PInfo("nothing action:%d!", code)
-		// 	} else {
-		// 		call(etjs, conn, runobj) //调用委托好的消息处理方法
-		// 	}
-		// }
-	}
+	// 	atomic.AddInt64(&mod.getnum, 1)
+	// 	code := util.Convert.ToInt32(etjs["ACTION"]) //可能会出错，不知道有没有捕获
+	// 	call := mod.RouteFun(code)
+	// 	if call == nil {
+	// 		loglogic.PInfo("nothing action:%d!", code)
+	// 	} else {
+	// 		call(etjs, conn, runobj) //调用委托好的消息处理方法
+	// 	}
+	// }
+
 }
 
 //WebSocketHTMLHandlego 默认的所有没定义的处理请求
