@@ -14,7 +14,7 @@ import (
 type DataDBModel interface {
 }
 
-type UpDataSave func(conndb *sql.DB, datamd DataDBModel)
+type UpDataSave func(conndb *sql.DB, datamd DataDBModel) error
 
 //UpDataModel 要修改的数据
 type UpDataModel struct {
@@ -97,7 +97,9 @@ func (this *DataThread) Go(mod *DataBaseModule) {
 func (this *DataThread) Save() {
 	//保存数据
 	for _, data := range this.updatamap {
-		data.SaveFun(this.Conndb, data.DataDBModel)
+		if err := data.SaveFun(this.Conndb, data.DataDBModel); err != nil {
+			loglogic.PError(err)
+		}
 	}
 	this.updatamap = make(map[string]*UpDataModel)
 }
