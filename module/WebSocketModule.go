@@ -119,7 +119,8 @@ func (mod *WebSocketModule) Stop() {
 //PrintStatus IModule 接口实现，打印状态
 func (mod *WebSocketModule) PrintStatus() string {
 	return fmt.Sprintf(
-		"\r\n\t\twebsocket Module:	%d/%d	(get/sendnum)",
+		"\r\n\t\twebsocket Module:	%d/%d/%d	(connum/get/sendnum)",
+		len(mod.wsmap),
 		atomic.AddInt64(&mod.getnum, 0),
 		atomic.AddInt64(&mod.sendnum, 0))
 }
