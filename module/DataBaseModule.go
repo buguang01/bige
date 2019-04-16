@@ -73,9 +73,14 @@ func (this *DataThread) Go(mod *DataBaseModule) {
 				case <-tk.C:
 					this.Save()
 					atomic.AddInt64(&mod.savenum, 1)
-				case d := <-this.SendChan:
-					this.updatamap[d.DataKey] = d
-					nd := d.UpTime
+				case upmd, ok := <-this.SendChan:
+					if !ok {
+						this.Save()
+						atomic.AddInt64(&mod.savenum, 1)
+						return
+					}
+					this.updatamap[upmd.DataKey] = upmd
+					nd := upmd.UpTime
 					if nd == 0 {
 						this.Save()
 						atomic.AddInt64(&mod.savenum, 1)
