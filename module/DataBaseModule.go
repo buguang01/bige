@@ -187,10 +187,12 @@ func (mod *DataBaseModule) DelUserThread(keyid int32) {
 
 }
 
+//AddUpDataModel 添加数据的方法
 func (mod *DataBaseModule) AddUpDataModel(upmd *UpDataModel) {
 	mod.UpDataChan <- upmd
 }
 
+//DBHandle 收数据的协程
 func (mod *DataBaseModule) DBHandle() {
 	mod.wg.Add(1)
 	defer mod.wg.Done()
