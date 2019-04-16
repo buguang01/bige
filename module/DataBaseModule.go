@@ -113,6 +113,11 @@ type DataBaseModule struct {
 	savenum    int64                 //保存次数
 }
 
+func NewDataBaseModule() *DataBaseModule {
+	result := new(DataBaseModule)
+	return result
+}
+
 //Init 初始化
 func (mod *DataBaseModule) Init() {
 	mod.PlayerList = make(map[int32]*DataThread)
