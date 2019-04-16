@@ -128,8 +128,9 @@ type DataBaseModule struct {
 	UpDataChan chan *UpDataModel //写入DB的数据流
 }
 
-func NewDataBaseModule() *DataBaseModule {
+func NewDataBaseModule(sqldb *sql.DB) *DataBaseModule {
 	result := new(DataBaseModule)
+	result.conndb = sqldb
 	result.UpDataChan = make(chan *UpDataModel, 100)
 	return result
 }
