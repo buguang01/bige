@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+const (
+	DataBase_DEL_USER_THREAD string = "DEL USER THREAD"
+)
+
 type DataDBModel interface {
 }
 
@@ -59,6 +63,9 @@ func (this *DataThread) Go(mod *DataBaseModule) {
 			for {
 				select {
 				case <-this.ctx.Done():
+					for upmd := range this.SendChan {
+						this.updatamap[upmd.DataKey] = upmd
+					}
 					this.Save()
 					atomic.AddInt64(&mod.savenum, 1)
 
@@ -97,6 +104,9 @@ func (this *DataThread) Go(mod *DataBaseModule) {
 func (this *DataThread) Save() {
 	//保存数据
 	for _, data := range this.updatamap {
+		if data.SaveFun == nil {
+			continue
+		}
 		if err := data.SaveFun(this.Conndb, data.DataDBModel); err != nil {
 			loglogic.PError(err)
 		}
@@ -107,16 +117,20 @@ func (this *DataThread) Save() {
 //DataBaseModule 数据持久化模块
 type DataBaseModule struct {
 	PlayerList map[int32]*DataThread //启动的用户协程
-	maplock    sync.Mutex            //上面那个集合的锁
-	ctx        context.Context       //启动控制
-	cancelfunc context.CancelFunc    //取消方法
-	wg         sync.WaitGroup        //等待所有关闭
-	currnum    int64                 //开协程数
-	savenum    int64                 //保存次数
+	// maplock    sync.Mutex            //上面那个集合的锁
+	ctx        context.Context    //启动控制
+	cancelfunc context.CancelFunc //取消方法
+	wg         sync.WaitGroup     //等待所有关闭
+	currnum    int64              //开协程数
+	savenum    int64              //保存次数
+	conndb     *sql.DB            //数据库对象
+
+	UpDataChan chan *UpDataModel //写入DB的数据流
 }
 
 func NewDataBaseModule() *DataBaseModule {
 	result := new(DataBaseModule)
+	result.UpDataChan = make(chan *UpDataModel, 100)
 	return result
 }
 
@@ -129,12 +143,14 @@ func (mod *DataBaseModule) Init() {
 
 //Start 启动
 func (mod *DataBaseModule) Start() {
+	threads.GoTry(mod.DBHandle, nil, nil)
 	loglogic.PStatus("DataBase Start.")
 }
 
 //Stop 停止
 func (mod *DataBaseModule) Stop() {
-	mod.cancelfunc()
+	close(mod.UpDataChan)
+
 	mod.wg.Wait()
 	loglogic.PStatus("DataBase Stop.")
 
@@ -148,9 +164,9 @@ func (mod *DataBaseModule) PrintStatus() string {
 		atomic.AddInt64(&mod.savenum, 0))
 }
 
-func (mod *DataBaseModule) GetUserThread(keyid int32, conndb *sql.DB) *DataThread {
-	mod.maplock.Lock()
-	defer mod.maplock.Unlock()
+func (mod *DataBaseModule) getUserThread(keyid int32, conndb *sql.DB) *DataThread {
+	// mod.maplock.Lock()
+	// defer mod.maplock.Unlock()
 	result, ok := mod.PlayerList[keyid]
 	if !ok {
 		result = NewDataThread(keyid, conndb)
@@ -159,4 +175,44 @@ func (mod *DataBaseModule) GetUserThread(keyid int32, conndb *sql.DB) *DataThrea
 		mod.PlayerList[keyid] = result
 	}
 	return result
+}
+
+func (mod *DataBaseModule) DelUserThread(keyid int32) {
+	upmd := new(UpDataModel)
+	upmd.KeyID = keyid
+	upmd.DataKey = DataBase_DEL_USER_THREAD
+	mod.AddUpDataModel(upmd)
+	// mod.maplock.Lock()
+	// defer mod.maplock.Unlock()
+
+}
+
+func (mod *DataBaseModule) AddUpDataModel(upmd *UpDataModel) {
+	mod.UpDataChan <- upmd
+}
+
+func (mod *DataBaseModule) DBHandle() {
+	mod.wg.Add(1)
+	defer mod.wg.Done()
+
+	for upmd := range mod.UpDataChan {
+		if upmd.DataKey == DataBase_DEL_USER_THREAD {
+			result, ok := mod.PlayerList[upmd.KeyID]
+			if ok {
+				delete(mod.PlayerList, upmd.KeyID)
+				result.cancelfunc()
+				close(result.SendChan)
+			}
+		} else {
+			userth := mod.getUserThread(upmd.KeyID, mod.conndb)
+			userth.SendChan <- upmd
+		}
+
+	}
+	mod.cancelfunc()
+	for _, userth := range mod.PlayerList {
+		close(userth.SendChan)
+	}
+	loglogic.PDebug("DataBase closed player thread.")
+
 }
