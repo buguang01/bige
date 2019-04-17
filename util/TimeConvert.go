@@ -5,19 +5,15 @@ import (
 )
 
 //TimeConvert 时间操作类
-var TimeConvert = timeconvert{}
-
-type timeconvert struct {
-}
 
 //GetCurrTime 当前UTC时间
-func (timeconvert) GetCurrTime() time.Time {
+func GetCurrTime() time.Time {
 	return time.Now().UTC()
 }
 
 //GetCurrTimeSecond 当前UTC时间精确到秒
-func (timeconvert) GetCurrTimeSecond() time.Time {
-	result := TimeConvert.GetCurrTime()
+func GetCurrTimeSecond() time.Time {
+	result := GetCurrTime()
 	result = time.Date(
 		result.Year(),
 		result.Month(),
@@ -31,8 +27,8 @@ func (timeconvert) GetCurrTimeSecond() time.Time {
 }
 
 //GetCurrDate 当前时间的日期
-func (timeconvert) GetCurrDate() time.Time {
-	result := TimeConvert.GetCurrTime()
+func GetCurrDate() time.Time {
+	result := GetCurrTime()
 	result = time.Date(
 		result.Year(),
 		result.Month(),
@@ -45,7 +41,7 @@ func (timeconvert) GetCurrDate() time.Time {
 	return result
 }
 
-func (timeconvert) GetDate(d time.Time) time.Time {
+func GetDate(d time.Time) time.Time {
 	result := time.Date(
 		d.Year(),
 		d.Month(),
@@ -57,7 +53,7 @@ func (timeconvert) GetDate(d time.Time) time.Time {
 		time.UTC)
 	return result
 }
-func (timeconvert) GetMinDateTime() time.Time {
+func GetMinDateTime() time.Time {
 	result := time.Date(
 		1970,
 		1,
