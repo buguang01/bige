@@ -56,44 +56,60 @@ func (this *DataThread) Go(mod *DataBaseModule) {
 	threads.GoTry(
 		func() {
 			atomic.AddInt64(&mod.currnum, 1)
-			d := time.Second * 9999999
-			tk := time.NewTicker(d)
-			tk.Stop()
+			d := time.Second * 600
 			dt := time.Now().Add(d)
-			for {
-				select {
-				case <-this.ctx.Done():
-					for upmd := range this.SendChan {
-						this.updatamap[upmd.DataKey] = upmd
-					}
-					this.Save()
-					atomic.AddInt64(&mod.savenum, 1)
-
-					return
-				case <-tk.C:
-					this.Save()
-					atomic.AddInt64(&mod.savenum, 1)
-				case upmd, ok := <-this.SendChan:
-					if !ok {
+			tk := time.NewTimer(d)
+			tk.Stop()
+			runing := true
+			for runing {
+				threads.Try(func() {
+					select {
+					case <-this.ctx.Done():
+						for upmd := range this.SendChan {
+							this.updatamap[upmd.DataKey] = upmd
+						}
 						this.Save()
 						atomic.AddInt64(&mod.savenum, 1)
+						runing = false
 						return
-					}
-					this.updatamap[upmd.DataKey] = upmd
-					nd := upmd.UpTime
-					if nd == 0 {
+					case <-tk.C:
 						this.Save()
 						atomic.AddInt64(&mod.savenum, 1)
-					} else {
-						ndt := time.Now().Add(nd)
-						if dt.Unix() > ndt.Unix() {
+						tk.Stop()
+
+					case upmd, ok := <-this.SendChan:
+						if !ok {
+							this.Save()
+							atomic.AddInt64(&mod.savenum, 1)
+							runing = false
+							return
+						}
+						this.updatamap[upmd.DataKey] = upmd
+						nd := upmd.UpTime
+						if nd <= 0 {
+							this.Save()
+							atomic.AddInt64(&mod.savenum, 1)
 							tk.Stop()
-							tk = time.NewTicker(nd)
-							dt = ndt
+						} else {
+							ndt := time.Now().Add(nd)
+							if dt.Unix() < time.Now().Unix() {
+								//比当前时间小，说明可能是停下来了要重新设置时间
+								dt = ndt
+								tk.Reset(nd)
+							} else if dt.Unix() > ndt.Unix() {
+								dt = ndt
+								tk.Reset(nd)
+							}
 						}
 					}
+				}, func(err interface{}) {
+					//如果运行出错了，就等10秒再试
+					loglogic.PFatal(err)
+					nd := time.Second * 10
+					tk.Reset(nd)
+					dt = time.Now().Add(nd)
+				}, nil)
 
-				}
 			}
 		},
 		nil,
