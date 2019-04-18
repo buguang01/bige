@@ -2,6 +2,7 @@ package threads
 
 import (
 	"buguang01/gsframe/loglogic"
+	"context"
 	"sync"
 	"time"
 )
@@ -64,25 +65,40 @@ func (this *ThreadRun) Go(f func(), resultf func()) {
 //ThreadGo 子协程管理计数，可以等子协程都完成
 //用它来管理所有开的协程，需要等这些线程都跑完
 type ThreadGo struct {
-	Wg sync.WaitGroup //等待
+	Wg  sync.WaitGroup //等待
+	Ctx context.Context
+	Cal context.CancelFunc
+}
+
+func NewThreadGo() *ThreadGo {
+	reuslt := new(ThreadGo)
+	reuslt.Ctx, reuslt.Cal = context.WithCancel(context.Background())
+	return reuslt
+
+}
+
+func (this *ThreadGo) CloseWait() {
+	this.Cal()
+	this.Wg.Wait()
 }
 
 //Go 在当前线程上跑
-func (this *ThreadGo) Go(f func()) {
+func (this *ThreadGo) Go(f func(ctx context.Context)) {
 	this.Wg.Add(1)
-	GoTry(
-		f,
-		nil,
-		func() {
-			defer this.Wg.Done()
-		})
+	GoTry(func() {
+		f(this.Ctx)
+	}, nil, func() {
+		defer this.Wg.Done()
+	})
 }
 
 //GoTry 在新协程上跑
-func (this *ThreadGo) GoTry(f func(), catch func(interface{}), finally func()) {
+func (this *ThreadGo) GoTry(f func(ctx context.Context), catch func(interface{}), finally func()) {
 	this.Wg.Add(1)
 	GoTry(
-		f,
+		func() {
+			f(this.Ctx)
+		},
 		catch,
 		func() {
 			defer this.Wg.Done()
@@ -93,10 +109,12 @@ func (this *ThreadGo) GoTry(f func(), catch func(interface{}), finally func()) {
 }
 
 //Try 在当前协程上跑
-func (this *ThreadGo) Try(f func(), catch func(interface{}), finally func()) {
+func (this *ThreadGo) Try(f func(ctx context.Context), catch func(interface{}), finally func()) {
 	this.Wg.Add(1)
 	Try(
-		f,
+		func() {
+			f(this.Ctx)
+		},
 		catch,
 		func() {
 			defer this.Wg.Done()

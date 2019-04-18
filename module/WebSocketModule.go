@@ -137,7 +137,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	defer conn.Close()
 
 	//用来管理连接下开的子协程
-	runobj := new(threads.ThreadGo)
+	runobj := threads.NewThreadGo()
 	request := make([]byte, 10240)
 	// msgbuff := make([]byte, 0, 20480)
 	//发给下面的连接对象，可以自定义一些信息和回调
@@ -147,7 +147,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	//发消息来说明这个用户掉线了
 	defer func() {
 		loglogic.PInfo("websocket client closeing.")
-		runobj.Wg.Wait() //要等下面的逻辑都处理完了，才可以运行下面的代码，保证保存的逻辑
+		runobj.CloseWait() //要等下面的逻辑都处理完了，才可以运行下面的代码，保证保存的逻辑
 		//用来处理发生连接关闭的时候，要处理的事
 		if wsconn.CloseFun != nil {
 			wsconn.CloseFun(wsconn)
