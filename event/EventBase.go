@@ -56,6 +56,7 @@ func (js JsonMap) GetHash() uint32 {
 	return uint32(js["HASH"].(float64))
 }
 
+//JsonArray JSON数组
 type JsonArray []interface{}
 
 func (js JsonArray) Add(d interface{}) {
