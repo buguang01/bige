@@ -55,3 +55,9 @@ func (js JsonMap) GetMemberID() int32 {
 func (js JsonMap) GetHash() uint32 {
 	return uint32(js["HASH"].(float64))
 }
+
+type JsonArray []interface{}
+
+func (js JsonArray) Add(d interface{}) {
+	js = append(js, d)
+}

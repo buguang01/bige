@@ -158,15 +158,14 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	runchan := make(chan bool, 8) //用来处理超时
 	threads.GoTry(
 		func() {
-			timeout := time.NewTicker(time.Duration(mod.cg.Timeout) * time.Second)
+			timeout := time.NewTimer(time.Duration(mod.cg.Timeout) * time.Second)
 			for {
 				select {
 				case <-timeout.C:
 					conn.Close()
 				case ok := <-runchan:
 					if ok {
-						timeout.Stop()
-						timeout = time.NewTicker(time.Duration(mod.cg.Timeout) * time.Second)
+						timeout.Reset(time.Duration(mod.cg.Timeout) * time.Second)
 					} else {
 						return
 					}
