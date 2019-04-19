@@ -181,6 +181,29 @@ func (str *String) ToInt64() (int64, error) {
 func (str *String) ToFloat() (float64, error) {
 	return strconv.ParseFloat(str.value, 64)
 }
+func (str *String) ToIntV() int {
+	v, err := str.ToInt()
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func (str *String) ToInt64V() int64 {
+	v, err := str.ToInt64()
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func (str *String) ToFloatV() float64 {
+	v, err := str.ToFloat()
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
 
 /*
   str := NewString("abcde")
