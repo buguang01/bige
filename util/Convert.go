@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 )
@@ -17,21 +18,21 @@ import (
 // 	panic(fmt.Sprintf("%#v to int fail.", v))
 // }
 
-// //ToString 类型转到string
-// func ToString(v interface{}) string {
-// 	switch v.(type) {
-// 	case string:
-// 		return v.(string)
-// 	case int:
-// 		return strconv.FormatInt(int64(v.(int)), 10)
-// 	case int:
-// 		return strconv.FormatInt(int64(v.(int)), 10)
-// 	case int64:
-// 		return strconv.FormatInt(v.(int64), 10)
-// 	}
-// 	panic(fmt.Sprintf("%#v to string fail.", v))
+//ToString 类型转到string
+func ToString(v interface{}) string {
+	switch v.(type) {
+	case string:
+		return v.(string)
+	case int:
+		return strconv.Itoa(v.(int))
+	case int64:
+		return strconv.FormatInt(v.(int64), 10)
+	case float64:
+		return strconv.FormatFloat(v.(float64), 'E', -1, 64)
+	}
+	panic(fmt.Sprintf("%#v to string fail.", v))
 
-// }
+}
 
 func ByteToAll(src []byte, dest interface{}) {
 	s := string(src)
