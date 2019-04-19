@@ -25,11 +25,11 @@ func ToString(v interface{}) string {
 		return v.(string)
 	case int:
 		return strconv.Itoa(v.(int))
-		
+
 	case int64:
 		return strconv.FormatInt(v.(int64), 10)
 	case float64:
-		return strconv.FormatFloat(v.(float64), 'E', -1, 64)
+		return strconv.FormatFloat(v.(float64), 'g', -1, 64)
 	}
 	panic(fmt.Sprintf("%#v to string fail.", v))
 
