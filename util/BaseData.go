@@ -3,6 +3,14 @@ package util
 //BaseData 基础仓库数据
 type BaseData map[int]int
 
+func (this BaseData) Clone() BaseData {
+	result := make(BaseData)
+	for k, v := range this {
+		result[k] = v
+	}
+	return result
+}
+
 func NewBaseDataString(str string) BaseData {
 	result := make(BaseData)
 	arr := StringToIntArray(str, ";")
