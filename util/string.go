@@ -50,7 +50,7 @@ func NewStringInt64(i int64) *String {
 
 func NewStringFloat64(f float64) *String {
 	var str String
-	str.value = strconv.FormatFloat(f, 'E', -1, 64)
+	str.value = strconv.FormatFloat(f, 'g', -1, 64)
 	return &str
 }
 
