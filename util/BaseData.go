@@ -1,9 +1,18 @@
 package util
 
 //BaseData 基础仓库数据
-type BaseData map[int64]int64
+type BaseData map[int]int
 
-func (this BaseData) UpData(key, num int64) {
+func NewBaseDataString(str string) BaseData {
+	result := make(BaseData)
+	arr := StringToIntArray(str, ";")
+	for i := 0; i < len(arr); i += 2 {
+		result[arr[i]] = arr[i+1]
+	}
+	return result
+}
+
+func (this BaseData) UpData(key, num int) {
 	v, _ := this[key]
 	if num+v > 0 {
 		this[key] = v + num
@@ -21,9 +30,9 @@ func (this BaseData) ToString() string {
 		} else {
 			sb.Append(";")
 		}
-		sb.AppendInt64(k)
+		sb.AppendInt(k)
 		sb.Append(";")
-		sb.AppendInt64(v)
+		sb.AppendInt(v)
 	}
 	return sb.ToString()
 }
