@@ -10,7 +10,7 @@ import (
 type HTTPcall func(et JsonMap, w http.ResponseWriter)
 
 //HTTPReplyMsg 回复消息
-func HTTPReplyMsg(w http.ResponseWriter, et JsonMap, resultcom int32, jsdata JsonMap) {
+func HTTPReplyMsg(w http.ResponseWriter, et JsonMap, resultcom int, jsdata JsonMap) {
 	jsresult := make(JsonMap)
 	jsresult["ACTION"] = et.GetAction()
 	// jsresult["ACTIONKEY"] = et["ACTIONKEY"]

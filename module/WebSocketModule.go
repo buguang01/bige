@@ -4,7 +4,6 @@ import (
 	"buguang01/gsframe/event"
 	"buguang01/gsframe/loglogic"
 	"buguang01/gsframe/threads"
-	"buguang01/gsframe/util"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,7 +22,7 @@ import (
 //WebSocketConfig websocket的配置
 type WebSocketConfig struct {
 	Addr      string //websocket 监听地址
-	Timeout   int32  //超时时间 （秒）
+	Timeout   int    //超时时间 （秒）
 	MsgMaxLen int    //一个消息最大长度B
 
 }
@@ -40,9 +39,9 @@ type WebSocketModule struct {
 	wsmap     map[*websocket.Conn]bool //所有的连接
 	wsmaplock sync.Mutex               //上面那个对象的锁
 
-	RouteFun func(code int32) event.WebSocketCall //用来生成事件处理器的工厂
+	RouteFun func(code int) event.WebSocketCall //用来生成事件处理器的工厂
 
-	// wslist         map[uint32]*WsConnModel    //websocket 列表
+	// wslist         map[uint]*WsConnModel    //websocket 列表
 	// wsclosefunlist map[*websocket.Conn]func() //如果socket关闭的时候调用
 	// wslock         sync.RWMutex               //对上面那个列表的锁
 
@@ -57,7 +56,7 @@ func NewWSModule(configmd *WebSocketConfig) *WebSocketModule {
 		Addr: configmd.Addr,
 	}
 	result.wsmap = make(map[*websocket.Conn]bool)
-	// result.wslist = make(map[uint32]*WsConnModel)
+	// result.wslist = make(map[uint]*WsConnModel)
 	// result.wsclosefunlist = make(map[*websocket.Conn]func())
 	return result
 }
@@ -195,7 +194,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 					break listen
 				}
 				atomic.AddInt64(&mod.getnum, 1)
-				code := util.Convert.ToInt32(etjs["ACTION"]) //可能会出错，不知道有没有捕获
+				code := etjs.GetAction() //["ACTION"]) //可能会出错，不知道有没有捕获
 				call := mod.RouteFun(code)
 				if call == nil {
 					loglogic.PInfo("nothing action:%d!", code)
@@ -247,7 +246,7 @@ func WebSocketHTMLHandlego(w http.ResponseWriter, req *http.Request) {
 }
 
 // //RegisterSocket 注册SOCKRT
-// func (mod *WebSocketModule) RegisterSocket(conn *websocket.Conn, hash uint32, f func()) {
+// func (mod *WebSocketModule) RegisterSocket(conn *websocket.Conn, hash uint, f func()) {
 // 	mod.wslock.Lock()
 // 	defer mod.wslock.Unlock()
 // 	mod.wslist[hash] = conn
@@ -255,7 +254,7 @@ func WebSocketHTMLHandlego(w http.ResponseWriter, req *http.Request) {
 // }
 
 // //RemoveSocket 移除连接
-// func (mod *WebSocketModule) RemoveSocket(conn *websocket.Conn, hash uint32) {
+// func (mod *WebSocketModule) RemoveSocket(conn *websocket.Conn, hash uint) {
 // 	mod.wslock.Lock()
 // 	defer mod.wslock.Unlock()
 // 	delete(mod.wslist, hash)

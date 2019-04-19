@@ -22,7 +22,7 @@ type UpDataSave func(conndb *sql.DB, datamd DataDBModel) error
 
 //UpDataModel 要修改的数据
 type UpDataModel struct {
-	KeyID       int32         //用户主键
+	KeyID       int         //用户主键
 	DataKey     string        //数据表
 	UpTime      time.Duration //保存时间
 	SaveFun     UpDataSave    //保存方法
@@ -31,7 +31,7 @@ type UpDataModel struct {
 
 //DataThread 用户的数据库协程
 type DataThread struct {
-	KeyID     int32                   //用户主键
+	KeyID     int                   //用户主键
 	updatamap map[string]*UpDataModel //缓存要更新的数据
 	SendChan  chan *UpDataModel       //收要更新的数据
 	Conndb    *sql.DB                 //数据库连接对象
@@ -40,7 +40,7 @@ type DataThread struct {
 	cancelfunc context.CancelFunc //取消方法
 }
 
-func NewDataThread(keyid int32, conndb *sql.DB) *DataThread {
+func NewDataThread(keyid int, conndb *sql.DB) *DataThread {
 	result := new(DataThread)
 	result.KeyID = keyid
 	result.updatamap = make(map[string]*UpDataModel)
@@ -137,7 +137,7 @@ func (this *DataThread) Save() {
 
 //DataBaseModule 数据持久化模块
 type DataBaseModule struct {
-	PlayerList map[int32]*DataThread //启动的用户协程
+	PlayerList map[int]*DataThread //启动的用户协程
 	// maplock    sync.Mutex            //上面那个集合的锁
 	ctx        context.Context    //启动控制
 	cancelfunc context.CancelFunc //取消方法
@@ -158,7 +158,7 @@ func NewDataBaseModule(sqldb *sql.DB) *DataBaseModule {
 
 //Init 初始化
 func (mod *DataBaseModule) Init() {
-	mod.PlayerList = make(map[int32]*DataThread)
+	mod.PlayerList = make(map[int]*DataThread)
 	mod.ctx, mod.cancelfunc = context.WithCancel(context.Background())
 
 }
@@ -186,7 +186,7 @@ func (mod *DataBaseModule) PrintStatus() string {
 		atomic.AddInt64(&mod.savenum, 0))
 }
 
-func (mod *DataBaseModule) getUserThread(keyid int32, conndb *sql.DB) *DataThread {
+func (mod *DataBaseModule) getUserThread(keyid int, conndb *sql.DB) *DataThread {
 	// mod.maplock.Lock()
 	// defer mod.maplock.Unlock()
 	result, ok := mod.PlayerList[keyid]
@@ -199,7 +199,7 @@ func (mod *DataBaseModule) getUserThread(keyid int32, conndb *sql.DB) *DataThrea
 	return result
 }
 
-func (mod *DataBaseModule) DelUserThread(keyid int32) {
+func (mod *DataBaseModule) DelUserThread(keyid int) {
 	upmd := new(UpDataModel)
 	upmd.KeyID = keyid
 	upmd.DataKey = DataBase_DEL_USER_THREAD

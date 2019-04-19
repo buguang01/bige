@@ -10,7 +10,7 @@ import (
 
 //GameConfigModel 游戏服务器的配置
 type GameConfigModel struct {
-	ServiceID   int32         //游戏服务器ID
+	ServiceID   int         //游戏服务器ID
 	PStatusTime time.Duration //打印状态的时间（秒）
 }
 

@@ -19,8 +19,8 @@ import (
 // 差不多1：1就可以了。
 type MysqlConfigModel struct {
 	Dsn        string //数据库连接字符串
-	MaxOpenNum int32  //最大连接数
-	MaxIdleNum int32  //最大空闲连接数
+	MaxOpenNum int  //最大连接数
+	MaxIdleNum int  //最大空闲连接数
 }
 
 //MysqlAccess mysql连接器

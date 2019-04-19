@@ -8,7 +8,7 @@ import (
 
 func TestConvert(t *testing.T) {
 	b := []byte("1001")
-	var v int32 = 0
+	var v int = 0
 	util.Convert.ByteToAll(b, &v)
 	fmt.Println(v)
 }

@@ -22,7 +22,7 @@ type WebSocketCall func(et JsonMap, wsmd *WebSocketModel, runobj *threads.Thread
 type WebSocketClose func(wsmd *WebSocketModel)
 
 //WebSocketReplyMsg 回复消息
-func WebSocketReplyMsg(wsmd *WebSocketModel, et JsonMap, resultcom int32, jsdata JsonMap) {
+func WebSocketReplyMsg(wsmd *WebSocketModel, et JsonMap, resultcom int, jsdata JsonMap) {
 	jsresult := make(JsonMap)
 	jsresult["ACTION"] = et["ACTION"]
 	// jsresult["ACTIONKEY"] = et["ACTIONKEY"]
@@ -38,7 +38,7 @@ func WebSocketReplyMsg(wsmd *WebSocketModel, et JsonMap, resultcom int32, jsdata
 }
 
 //WebSocketSendMsg 主动给一个用户发消息
-func WebSocketSendMsg(wsmd *WebSocketModel, action int32, jsdata JsonMap) {
+func WebSocketSendMsg(wsmd *WebSocketModel, action int, jsdata JsonMap) {
 	jsresult := make(JsonMap)
 	jsresult["ACTION"] = action
 	// jsresult["ACTIONKEY"] = et["ACTIONKEY"]

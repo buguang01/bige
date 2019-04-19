@@ -37,23 +37,31 @@ type IMsgEvent interface {
 type JsonMap map[string]interface{}
 
 //GetAction 消息号
-func (js JsonMap) GetAction() int32 {
-	return util.Convert.ToInt32(js["ACTION"])
+func (js JsonMap) GetAction() int {
+	v, _ := util.NewStringAny(js["ACTION"]).ToInt()
+	return v
+	// return util.Convert.ToInt32(js["ACTION"])
 }
 
 //GetActionKey int32 //消息序号
-func (js JsonMap) GetActionKey() int32 {
-	return util.Convert.ToInt32(js["ACTIONKEY"])
+func (js JsonMap) GetActionKey() int {
+	v, _ := util.NewStringAny(js["ACTIONKEY"]).ToInt()
+	return v
+	// return util.Convert.ToInt32(js["ACTIONKEY"])
 }
 
 //GetMemberID int32  //用户ID
-func (js JsonMap) GetMemberID() int32 {
-	return util.Convert.ToInt32(js["MEMBERID"])
+func (js JsonMap) GetMemberID() int {
+	v, _ := util.NewStringAny(js["MEMBERID"]).ToInt()
+	return v
+	// return util.Convert.ToInt32(js["MEMBERID"])
 }
 
 //GetHash string     //发回给用户信息用的钥匙
-func (js JsonMap) GetHash() uint32 {
-	return uint32(js["HASH"].(float64))
+func (js JsonMap) GetHash() string {
+	v := util.NewStringAny(js["HASH"]).ToString()
+	return v
+	// return uint32(js["HASH"].(float64))
 }
 
 //JsonArray JSON数组

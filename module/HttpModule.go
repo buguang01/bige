@@ -15,7 +15,7 @@ import (
 //HTTPConfig httpmodule的配置
 type HTTPConfig struct {
 	HTTPAddr string //监听地址
-	Timeout  int32
+	Timeout  int
 }
 
 //HTTPModule ...
@@ -29,8 +29,8 @@ type HTTPModule struct {
 	runing     int64          //当前在处理的消息数
 	// failnum    int64          //发生问题的消息数
 
-	RouteFun   func(code int32) event.HTTPcall //用来生成事件处理器的工厂
-	TimeoutFun event.HTTPcall                  //超时时的回调方法
+	RouteFun   func(code int) event.HTTPcall //用来生成事件处理器的工厂
+	TimeoutFun event.HTTPcall                //超时时的回调方法
 }
 
 //NewHTTPModule 生成一个新的HTTP的对象
@@ -117,10 +117,10 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("json error."))
 		return
 	}
-	action := etjs.GetAction()
 	loglogic.PInfo(request)
 	threads.Try(
 		func() {
+			action := etjs.GetAction()
 			call := mod.RouteFun(action)
 			if call == nil {
 				loglogic.PInfo("nothing action:%d!", action)

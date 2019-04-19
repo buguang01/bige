@@ -5,7 +5,7 @@ import (
 )
 
 //LogLevel 日志等级
-type LogLevel uint32
+type LogLevel uint
 
 //日志等级之间都有10段预留
 //为了日后实际开发时，可能出现的自定义日志等级

@@ -32,7 +32,7 @@ func TestModule(t *testing.T) {
 }
 
 //GetEventByData 路由器的例子
-func GetEventByData(code int32) event.HTTPcall {
+func GetEventByData(code int) event.HTTPcall {
 	switch code {
 	case 1001:
 		return HTTPGetMsgHandle

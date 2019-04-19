@@ -18,8 +18,19 @@ QQ群号：441240897
 * redis : go get -u github.com/garyburd/redigo
 * 打印颜色：go get -u github.com/gookit/color
 
+借用库
+-------
+* utils: go get -u github.com/typa01/go-utils
+
 开发进度
 --------
 * 已完成的子功能：
-*   loglogic    日志
-*   HTTPModule  HTTP的收消息模块
+*   loglogic        日志
+*   HTTPModule      HTTP的收消息模块
+*   WebSocket       WebSocket收发消息模块
+*   threads         协程管理
+*   event           收到的消息基础类型
+*   DataBaseModule  数据库处理模块
+*   util            通用基础模块（String、StringBuilder、TimeConvert、(WorkerID)SnowFlakeID、BaseData）
+*   model           mysql的模块、Redis的模块
+
