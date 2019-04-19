@@ -6,10 +6,10 @@ import (
 
 //IMsgEvent 所有的MsgEventBase都要实现这个
 type IMsgEvent interface {
-	GetAction() int32    //消息号
-	GetActionKey() int32 //消息序号
-	GetMemberID() int32  //用户ID
-	GetHash() uint32     //发回给用户信息用的钥匙
+	GetAction() int    //消息号
+	GetActionKey() int //消息序号
+	GetMemberID() int  //用户ID
+	GetHash() string   //发回给用户信息用的钥匙
 }
 
 //IHTTPMsgEVent 如果是HTTP的收到的事件需要这个这个接口
