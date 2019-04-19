@@ -13,6 +13,9 @@ func (this BaseData) Clone() BaseData {
 
 func NewBaseDataString(str string) BaseData {
 	result := make(BaseData)
+	if str == "" {
+		return result
+	}
 	arr := StringToIntArray(str, ";")
 	for i := 0; i < len(arr); i += 2 {
 		result[arr[i]] = arr[i+1]
