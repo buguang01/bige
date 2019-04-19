@@ -58,7 +58,3 @@ func (js JsonMap) GetHash() uint32 {
 
 //JsonArray JSON数组
 type JsonArray []interface{}
-
-func (js JsonArray) Add(d interface{}) {
-	js = append(js, d)
-}
