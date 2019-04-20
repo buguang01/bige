@@ -13,7 +13,7 @@ func (this BaseData) Clone() BaseData {
 
 func NewBaseDataString(str string) BaseData {
 	result := make(BaseData)
-	if str == "" {
+	if str == "" || str == "0" {
 		return result
 	}
 	arr := StringToIntArray(str, ";")
