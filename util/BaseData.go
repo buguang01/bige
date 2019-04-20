@@ -32,6 +32,19 @@ func (this BaseData) UpData(key, num int) {
 	}
 }
 
+func (this BaseData) UpDataBc(addbc, delbc BaseData) {
+	if delbc != nil {
+		for k, n := range delbc {
+			this.UpData(k, -n)
+		}
+	}
+	if addbc != nil {
+		for k, n := range addbc {
+			this.UpData(k, n)
+		}
+	}
+}
+
 func (this BaseData) ToString() string {
 	sb := NewStringBuilder()
 	t := 0
