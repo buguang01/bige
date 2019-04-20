@@ -4,6 +4,12 @@ type BaseContainer struct {
 	BaseData
 }
 
+func NewBaseContainer(str string) *BaseContainer {
+	result := new(BaseContainer)
+	result.BaseData = NewBaseDataString(str)
+	return result
+}
+
 func (this *BaseContainer) UpItem(itemid, num, max int) {
 	v, _ := this.BaseData[itemid]
 	if num+v > 0 {
