@@ -45,6 +45,14 @@ func (this BaseData) UpDataBc(addbc, delbc BaseData) {
 	}
 }
 
+func (this BaseData) GetNumByKey(key int) int {
+	v, ok := this[key]
+	if !ok {
+		return 0
+	}
+	return v
+}
+
 func (this BaseData) ToString() string {
 	sb := NewStringBuilder()
 	t := 0
