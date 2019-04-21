@@ -6,6 +6,7 @@ import (
 	"buguang01/gsframe/module"
 	"buguang01/gsframe/threads"
 	"context"
+	"fmt"
 	"testing"
 	"time"
 )
@@ -56,4 +57,17 @@ func RouteFun(code int) event.WebSocketCall {
 type MemberMD struct {
 	MemberID int
 	UserName string
+}
+
+func TestArray(t *testing.T) {
+	a := []int{1, 9, 8, 7}
+	i := 3
+	fmt.Println(a)
+	a = append(a[:i], a[i+1:]...)
+	fmt.Println(a)
+}
+
+func TestZoer(t *testing.T) {
+	k := 0 % 10
+	fmt.Println(k)
 }

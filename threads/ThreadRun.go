@@ -88,7 +88,7 @@ func (this *ThreadGo) Go(f func(ctx context.Context)) {
 	GoTry(func() {
 		f(this.Ctx)
 	}, nil, func() {
-		defer this.Wg.Done()
+		this.Wg.Done()
 	})
 }
 
