@@ -171,9 +171,8 @@ func (this *DataThread) CloseChan() {
 
 //Handle 保存数据的协程
 func (this *DataThread) Handle(ctx context.Context, mg *SqlDataModule) {
-	d := time.Second * 600
-	dt := time.Now().Add(d)
-	tk := time.NewTimer(d)
+	dt := time.Now()
+	tk := time.NewTimer(time.Second * 600)
 	tk.Stop()
 threadhandle:
 	for {
