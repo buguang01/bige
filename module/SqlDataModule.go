@@ -114,6 +114,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 			}
 		case <-tk.C:
 			{
+				tk.Reset(1 * time.Second)
 				if len(this.keylist) == 0 {
 					break
 				}
@@ -128,7 +129,6 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 				} else {
 					this.keylist = append(this.keylist[:loop], this.keylist[loop+1:]...)
 				}
-				tk.Reset(1 * time.Second)
 			}
 		}
 	}
