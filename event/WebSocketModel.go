@@ -39,6 +39,10 @@ func WebSocketReplyMsg(wsmd *WebSocketModel, et JsonMap, resultcom int, jsdata J
 
 //WebSocketSendMsg 主动给一个用户发消息
 func WebSocketSendMsg(wsmd *WebSocketModel, action int, jsdata JsonMap) {
+	if wsmd == nil {
+		loglogic.PDebug("WebSocket is nil.Action:%d,Jsdata:%v.", action, jsdata)
+		return
+	}
 	jsresult := make(JsonMap)
 	jsresult["ACTION"] = action
 	// jsresult["ACTIONKEY"] = et["ACTIONKEY"]
