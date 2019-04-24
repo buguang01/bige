@@ -104,6 +104,7 @@ func (mod *HTTPModule) PrintStatus() string {
 
 //Handle http发来的所有请求都会到这个方法来
 func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	mod.wg.Add(1)
 	defer mod.wg.Done()
 	atomic.AddInt64(&mod.getnum, 1)
