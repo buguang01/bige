@@ -20,7 +20,7 @@ type SqlDataConfig struct {
 type SqlDataModule struct {
 	playerlist map[int]*DataThread      //操作数据库的列表
 	keylist    []int                    //key列表，用来间隔遍历
-	chandata   chan *event.SqlDataModel //消息信道
+	chandata   chan event.ISqlDataModel //消息信道
 	mgGo       *threads.ThreadGo        //子协程管理器
 	getnum     int64                    //收到的消息数
 	conndb     *sql.DB                  //数据库对象
@@ -32,7 +32,7 @@ func NewSqlDataModule(config *SqlDataConfig, sqldb *sql.DB) *SqlDataModule {
 	result.cg = config
 	result.playerlist = make(map[int]*DataThread)
 	result.keylist = make([]int, 0, 10000)
-	result.chandata = make(chan *event.SqlDataModel, 128)
+	result.chandata = make(chan event.ISqlDataModel, 128)
 	result.mgGo = threads.NewThreadGo()
 	result.conndb = sqldb
 	return result
@@ -58,7 +58,7 @@ func (this *SqlDataModule) PrintStatus() string {
 		len(this.playerlist),
 		atomic.AddInt64(&this.getnum, 0))
 }
-func (this *SqlDataModule) AddMsg(msg *event.SqlDataModel) {
+func (this *SqlDataModule) AddMsg(msg event.ISqlDataModel) {
 	// atomic.AddInt64(&this.currnum, 1)
 	this.chandata <- msg
 }
@@ -74,10 +74,10 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 					select {
 					case upmd := <-this.chandata:
 						{
-							logicth, ok := this.playerlist[upmd.KeyID]
+							logicth, ok := this.playerlist[upmd.GetKeyID()]
 							if !ok {
 								//新开一个协程
-								logicth = newDataThread(upmd.KeyID, this.conndb)
+								logicth = newDataThread(upmd.GetKeyID(), this.conndb)
 								this.playerlist[logicth.KeyID] = logicth
 								logicth.Start(this)
 							}
@@ -101,10 +101,10 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 					return
 				}
 				atomic.AddInt64(&this.getnum, 1)
-				logicth, ok := this.playerlist[upmd.KeyID]
+				logicth, ok := this.playerlist[upmd.GetKeyID()]
 				if !ok {
 					//新开一个协程
-					logicth = newDataThread(upmd.KeyID, this.conndb)
+					logicth = newDataThread(upmd.GetKeyID(), this.conndb)
 					this.playerlist[logicth.KeyID] = logicth
 					this.keylist = append(this.keylist, logicth.KeyID)
 					logicth.Start(this)
@@ -137,8 +137,8 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 //DataThread 用户的数据库协程
 type DataThread struct {
 	KeyID     int                            //用户主键
-	updatamap map[string]*event.SqlDataModel //缓存要更新的数据
-	SendChan  chan *event.SqlDataModel       //收要更新的数据
+	updatamap map[string]event.ISqlDataModel //缓存要更新的数据
+	SendChan  chan event.ISqlDataModel       //收要更新的数据
 	Conndb    *sql.DB                        //数据库连接对象
 	UpTime    time.Time                      //更新时间
 }
@@ -146,8 +146,8 @@ type DataThread struct {
 func newDataThread(keyid int, conndb *sql.DB) *DataThread {
 	result := new(DataThread)
 	result.KeyID = keyid
-	result.updatamap = make(map[string]*event.SqlDataModel)
-	result.SendChan = make(chan *event.SqlDataModel, 32)
+	result.updatamap = make(map[string]event.ISqlDataModel)
+	result.SendChan = make(chan event.ISqlDataModel, 32)
 	result.Conndb = conndb
 
 	return result
@@ -180,7 +180,7 @@ threadhandle:
 		case <-ctx.Done():
 			{
 				for upmd := range this.SendChan {
-					this.updatamap[upmd.DataKey] = upmd
+					this.updatamap[upmd.GetDataKey()] = upmd
 				}
 				threads.Try(this.Save, nil, nil)
 				break threadhandle
@@ -191,8 +191,8 @@ threadhandle:
 					threads.Try(this.Save, nil, nil)
 					break threadhandle
 				}
-				this.updatamap[upmd.DataKey] = upmd
-				nd := upmd.UpTime
+				this.updatamap[upmd.GetDataKey()] = upmd
+				nd := upmd.GetUpTime()
 				if nd <= 0 {
 					threads.Try(this.Save, nil, nil)
 					// atomic.AddInt64(&mod.savenum, 1)
@@ -280,14 +280,11 @@ threadhandle:
 func (this *DataThread) Save() {
 	//保存数据
 	for _, data := range this.updatamap {
-		if data.SaveFun == nil {
-			continue
-		}
-		if err := data.SaveFun(this.Conndb, data.DataDBModel); err != nil {
+		if err := data.UpDataSave(this.Conndb); err != nil {
 			loglogic.PError(err)
 		}
 	}
-	this.updatamap = make(map[string]*event.SqlDataModel)
+	this.updatamap = make(map[string]event.ISqlDataModel)
 }
 
 // //DataBaseModule 数据持久化模块
