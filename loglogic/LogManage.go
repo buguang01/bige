@@ -218,9 +218,12 @@ func PStatusKey(msgstr string, keyid int, a ...interface{}) {
 }
 
 //PError 游戏中的错误日志
-func PError(msgstr interface{}) {
+func PError(err error, msgstr string, a ...interface{}) {
+	if msgstr != "" {
+		msgstr = fmt.Sprintf(msgstr, a)
+	}
 	PrintLog(&LogMsgModel{
-		Msg:   fmt.Sprintf("%v", msgstr),
+		Msg:   fmt.Sprintf("%v%s", err, msgstr),
 		LogLv: LogLevelerrorlevel,
 		Stack: string(debug.Stack()),
 		KeyID: -1,
@@ -228,9 +231,12 @@ func PError(msgstr interface{}) {
 }
 
 //PErrorKey 指定key的游戏中的错误日志
-func PErrorKey(msgstr interface{}, keyid int) {
+func PErrorKey(err error, msgstr string, keyid int, a ...interface{}) {
+	if msgstr != "" {
+		msgstr = fmt.Sprintf(msgstr, a)
+	}
 	PrintLog(&LogMsgModel{
-		Msg:   fmt.Sprintf("%v", msgstr),
+		Msg:   fmt.Sprintf("%v%s", err, msgstr),
 		LogLv: LogLevelerrorlevel,
 		Stack: string(debug.Stack()),
 		KeyID: keyid,
