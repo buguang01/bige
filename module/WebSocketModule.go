@@ -103,7 +103,7 @@ func (mod *WebSocketModule) Start() {
 //Stop IModule 接口实现
 func (mod *WebSocketModule) Stop() {
 	if err := mod.httpServer.Close(); err != nil {
-		loglogic.PError("Close websocket Module:" + err.Error())
+		loglogic.PError(err, "Close websocket Module:")
 	}
 	mod.wsmaplock.Lock()
 	m := mod.wsmap

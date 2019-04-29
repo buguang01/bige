@@ -281,7 +281,7 @@ func (this *DataThread) Save() {
 	//保存数据
 	for _, data := range this.updatamap {
 		if err := data.UpDataSave(this.Conndb); err != nil {
-			loglogic.PError(err)
+			loglogic.PError(err, " Data: %v ", data)
 		}
 	}
 	this.updatamap = make(map[string]event.ISqlDataModel)

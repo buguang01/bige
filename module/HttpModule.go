@@ -88,7 +88,7 @@ func (mod *HTTPModule) Start() {
 //Stop IModule 接口实现
 func (mod *HTTPModule) Stop() {
 	if err := mod.httpServer.Close(); err != nil {
-		loglogic.PError("Close HttpModule:" + err.Error())
+		loglogic.PError(err, "Close HttpModule:")
 	}
 	mod.wg.Wait()
 	loglogic.PStatus("HTTP Module Stop")
