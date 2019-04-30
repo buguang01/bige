@@ -68,3 +68,21 @@ func (this BaseData) ToString() string {
 	}
 	return sb.ToString()
 }
+
+//Count 总数量
+func (this BaseData) Count() (result int) {
+	for _, n := range this {
+		result += n
+	}
+	return result
+}
+
+//MaxItem 最大数值的KEY，value
+func (this BaseData) MaxItem() (key, num int) {
+	for k, n := range this {
+		if n > num {
+			key, num = k, n
+		}
+	}
+	return key, num
+}
