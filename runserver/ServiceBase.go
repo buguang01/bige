@@ -10,7 +10,7 @@ import (
 
 //GameConfigModel 游戏服务器的配置
 type GameConfigModel struct {
-	ServiceID   int         //游戏服务器ID
+	ServiceID   int           //游戏服务器ID
 	PStatusTime time.Duration //打印状态的时间（秒）
 }
 
@@ -18,6 +18,7 @@ type GameConfigModel struct {
 type GameServiceBase struct {
 	mlist []module.IModule
 	cg    *GameConfigModel
+	isrun bool
 }
 
 //NewGameService 生成一个新的游戏服务器
@@ -36,6 +37,7 @@ func (gs *GameServiceBase) AddModule(md module.IModule) {
 
 //Run 运行游戏
 func (gs *GameServiceBase) Run() {
+	gs.isrun = true
 	//
 	for _, md := range gs.mlist {
 		md.Start()
@@ -58,9 +60,15 @@ Pstatus:
 			loglogic.PStatus(ps)
 		}
 	}
+	gs.isrun = false
 	for i := len(gs.mlist) - 1; i >= 0; i-- {
 		md := gs.mlist[i]
 		md.Stop()
 	}
 
+}
+
+//GetIsRun 我们游戏是不是还在运行着，如果为false表示我们服务器正在关闭中
+func (gs *GameServiceBase) GetIsRun() bool {
+	return gs.isrun
 }
