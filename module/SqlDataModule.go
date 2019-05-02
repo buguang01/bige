@@ -13,7 +13,10 @@ import (
 )
 
 type SqlDataConfig struct {
-	Timeout int //超时时间（秒）
+	Timeout    int //超时时间（秒）
+	InitNum    int //初始化内存空间
+	ChanNum    int //通道缓存空间
+	SubChanNum int //子通道缓存空间
 }
 
 //SqlDataModule 数据库的模块
@@ -30,9 +33,9 @@ type SqlDataModule struct {
 func NewSqlDataModule(config *SqlDataConfig, sqldb *sql.DB) *SqlDataModule {
 	result := new(SqlDataModule)
 	result.cg = config
-	result.playerlist = make(map[int]*DataThread)
-	result.keylist = make([]int, 0, 10000)
-	result.chandata = make(chan event.ISqlDataModel, 128)
+	result.playerlist = make(map[int]*DataThread, config.InitNum)
+	result.keylist = make([]int, 0, config.InitNum)
+	result.chandata = make(chan event.ISqlDataModel, config.ChanNum)
 	result.mgGo = threads.NewThreadGo()
 	result.conndb = sqldb
 	return result
@@ -77,7 +80,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 							logicth, ok := this.playerlist[upmd.GetKeyID()]
 							if !ok {
 								//新开一个协程
-								logicth = newDataThread(upmd.GetKeyID(), this.conndb)
+								logicth = newDataThread(upmd.GetKeyID(), this.conndb, this.cg.SubChanNum)
 								this.playerlist[logicth.KeyID] = logicth
 								logicth.Start(this)
 							}
@@ -104,7 +107,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 				logicth, ok := this.playerlist[upmd.GetKeyID()]
 				if !ok {
 					//新开一个协程
-					logicth = newDataThread(upmd.GetKeyID(), this.conndb)
+					logicth = newDataThread(upmd.GetKeyID(), this.conndb, this.cg.SubChanNum)
 					this.playerlist[logicth.KeyID] = logicth
 					this.keylist = append(this.keylist, logicth.KeyID)
 					logicth.Start(this)
@@ -143,11 +146,11 @@ type DataThread struct {
 	UpTime    time.Time                      //更新时间
 }
 
-func newDataThread(keyid int, conndb *sql.DB) *DataThread {
+func newDataThread(keyid int, conndb *sql.DB, channum int) *DataThread {
 	result := new(DataThread)
 	result.KeyID = keyid
 	result.updatamap = make(map[string]event.ISqlDataModel)
-	result.SendChan = make(chan event.ISqlDataModel, 32)
+	result.SendChan = make(chan event.ISqlDataModel, channum)
 	result.Conndb = conndb
 
 	return result
