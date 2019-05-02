@@ -5,6 +5,7 @@ import (
 	"buguang01/gsframe/loglogic"
 	"buguang01/gsframe/module"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"testing"
 	"time"
@@ -85,4 +86,36 @@ func TestTmp(t *testing.T) {
 	}
 	fmt.Print(a)
 	fmt.Print(b)
+}
+
+func TestTime(t *testing.T) {
+	// g := threads.NewThreadGo()
+	m := make(map[int]*event.SqlDataModel, 10240000)
+
+	for i := 0; i < 10240000; i++ {
+		m[i] = new(event.SqlDataModel)
+		k := rand.Intn(100)
+		if k < 10 {
+			delete(m, rand.Intn(i))
+		}
+		// g.Go(func(ctx context.Context) {
+		// 	<-ctx.Done()
+		// })
+	}
+	fmt.Println(len(m))
+	// fmt.Println("end1")
+	time.Sleep(10 * time.Second)
+	for i := 0; i < 10240000; i++ {
+		m[i] = new(event.SqlDataModel)
+		k := rand.Intn(100)
+		if k < 10 {
+			delete(m, rand.Intn(i))
+		}
+		// g.Go(func(ctx context.Context) {
+		// 	<-ctx.Done()
+		// })
+	}
+	// fmt.Println(len(m))
+	fmt.Println("end2")
+
 }

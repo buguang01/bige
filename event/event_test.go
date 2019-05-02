@@ -2,35 +2,21 @@ package event_test
 
 import (
 	"buguang01/gsframe/event"
-	"encoding/json"
 	"fmt"
 	"testing"
 )
 
-func TestJsonEvent(t *testing.T) {
+func TestMemory(t *testing.T) {
+	var tmp event.IMemoryModel = new(TmpMemory)
 
-	et := &EventUserLogin{}
-
-	p := func(es event.IMsgEvent) {
-		json.Unmarshal([]byte(`
-		{"action":1000,"appt":666}
-		`), es)
-		fmt.Println(es)
-		es.WorkHandle()
-	}
-	p(et)
-	fmt.Println(et)
-	et.WorkHandle()
-
+	tmp.Handle(nil)
 }
 
-//子类也可以正常使用
-type EventUserLogin struct {
-	event.MsgEventBase
-	Appt int
+type TmpMemory struct {
+	event.MemoryModel
+	Num int
 }
 
-// func (et *EventUserLogin) WorkHandle() {
-// 	fmt.Printf("%T 实现WorkHandle", et)
-
-// }
+func (this *TmpMemory) Run() {
+	fmt.Println("tmpmemory")
+}
