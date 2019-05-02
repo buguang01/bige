@@ -17,7 +17,10 @@ import (
 //这样做的目地是为了同一用户的同一类消息会在一个线程上处理
 
 type LogicConfig struct {
-	Timeout int //超时时间（秒）
+	Timeout    int //超时时间（秒）
+	InitNum    int //初始化内存空间
+	ChanNum    int //通道缓存空间
+	SubChanNum int //子通道缓存空间
 }
 
 //LogicModule 逻辑模块
@@ -34,9 +37,9 @@ type LogicModule struct {
 func NewLogicModule(config *LogicConfig) *LogicModule {
 	result := new(LogicModule)
 	result.cg = config
-	result.logicList = make(map[string]*LogicThreadModule)
-	result.keylist = make([]string, 0, 10000)
-	result.chanLogic = make(chan event.LogicModel, 128)
+	result.logicList = make(map[string]*LogicThreadModule, config.InitNum)
+	result.keylist = make([]string, 0, config.InitNum)
+	result.chanLogic = make(chan event.LogicModel, config.ChanNum)
 	result.mgGo = threads.NewThreadGo()
 	return result
 }
@@ -89,7 +92,7 @@ func (this *LogicModule) Hander(ctx context.Context) {
 							logicth, ok := this.logicList[logicmd.KeyID()]
 							if !ok {
 								//新开一个协程
-								logicth = newLogicThread(logicmd.KeyID())
+								logicth = newLogicThread(logicmd.KeyID(), this.cg.SubChanNum)
 								this.logicList[logicth.KeyID] = logicth
 								this.keylist = append(this.keylist, logicth.KeyID)
 								logicth.Start(this)
@@ -135,7 +138,7 @@ func (this *LogicModule) Hander(ctx context.Context) {
 				logicth, ok := this.logicList[logicmd.KeyID()]
 				if !ok {
 					//新开一个协程
-					logicth = newLogicThread(logicmd.KeyID())
+					logicth = newLogicThread(logicmd.KeyID(), this.cg.SubChanNum)
 					this.logicList[logicth.KeyID] = logicth
 					logicth.Start(this)
 				}
@@ -192,10 +195,10 @@ type LogicThreadModule struct {
 	currnum   int64                 //要处理的消息数
 }
 
-func newLogicThread(keyid string) *LogicThreadModule {
+func newLogicThread(keyid string, channum int) *LogicThreadModule {
 	result := new(LogicThreadModule)
 	result.KeyID = keyid
-	result.chanLogic = make(chan event.LogicModel, 32)
+	result.chanLogic = make(chan event.LogicModel, channum)
 	return result
 }
 
