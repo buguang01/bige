@@ -33,6 +33,7 @@ QQ群号：441240897
 *   WebSocket       WebSocket收发消息模块
 *   LogicModule     业务逻辑模块，用来管理业务协程，可以让业务逻辑在指定KEY的协程上运行
 *   SqlDataModule   数据库处理模块，可以让DB操作在指定KEY的协程上运行，还可以设置延时运行
+*   MemoryModule   内存数据管理器，可以用来管理，数据什么空闲多少时间后，进行卸载
 *   event           收到的消息基础类型、module用到的一些信道数据结构
 *   model           mysql的模块、Redis的模块
 *   threads         协程管理
