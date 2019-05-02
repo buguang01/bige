@@ -76,6 +76,11 @@ func NewThreadGo() *ThreadGo {
 	return reuslt
 
 }
+func NewThreadGoBySub(ctx context.Context) *ThreadGo {
+	reuslt := new(ThreadGo)
+	reuslt.Ctx, reuslt.Cal = context.WithCancel(ctx)
+	return reuslt
+}
 
 func (this *ThreadGo) CloseWait() {
 	this.Cal()
