@@ -10,10 +10,11 @@ QQ群号：441240897
 --------
 文档
 --------
-* [HTTPMoudle](https://github.com/buguang01/gsframe/blob/master/module/README_HTTP.md)
-* [LogicMoudle](https://github.com/buguang01/gsframe/blob/master/module/README_LOGIC.md)
-* [SqlDataModule](https://github.com/buguang01/gsframe/blob/master/module/README_SQL.md)
-* [WebSocket](https://github.com/buguang01/gsframe/blob/master/module/README_WEBSOCKET.md)
+* [HTTPMoudle](https://github.com/buguang01/gsframe/blob/master/module/README.md)
+* [LogicMoudle](https://github.com/buguang01/gsframe/blob/master/module/README.md)
+* [SqlDataModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
+* [WebSocketModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
+* [MemoryModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
 
 使用的第三方库
 --------
