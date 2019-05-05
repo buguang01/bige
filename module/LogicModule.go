@@ -140,6 +140,7 @@ func (this *LogicModule) Hander(ctx context.Context) {
 					//新开一个协程
 					logicth = newLogicThread(logicmd.KeyID(), this.cg.SubChanNum)
 					this.logicList[logicth.KeyID] = logicth
+					this.keylist = append(this.keylist, logicth.KeyID)
 					logicth.Start(this)
 				}
 				//收到消息，发给子模块
