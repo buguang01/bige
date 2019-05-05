@@ -178,7 +178,8 @@ memorythread:
 					mg.reListenMsg(this.DataMemory)
 					break memorythread
 				}
-				this.tk.Stop()
+				this.tk.Reset(time.Duration(mg.cg.RunTime) * time.Second)
+				// this.tk.Stop()
 			}
 		}
 	}
