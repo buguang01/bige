@@ -110,7 +110,7 @@ func (this *MemoryModule) Handle(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			{
-
+				return
 			}
 		case cmd := <-this.chandata:
 			{
