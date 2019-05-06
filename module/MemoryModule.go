@@ -71,7 +71,7 @@ func (this *MemoryModule) Stop() {
 //PrintStatus 打印状态
 func (this *MemoryModule) PrintStatus() string {
 	return fmt.Sprintf(
-		"\r\n		Momery Module:	%d/%d/%d	(sum/load/unload)",
+		"\r\n		Momery Module       :%d/%d/%d	(sum/load/unload)",
 		len(this.mdList),
 		atomic.AddInt64(&this.loadNum, 0),
 		atomic.AddInt64(&this.unloadNum, 0))

@@ -97,7 +97,7 @@ func (mod *HTTPModule) Stop() {
 //PrintStatus IModule 接口实现，打印状态
 func (mod *HTTPModule) PrintStatus() string {
 	return fmt.Sprintf(
-		"\r\n\t\tHTTP Module:	%d/%d	(get/runing)",
+		"\r\n		HTTP Module         :%d/%d		(get/runing)",
 		atomic.AddInt64(&mod.getnum, 0),
 		atomic.AddInt64(&mod.runing, 0))
 }

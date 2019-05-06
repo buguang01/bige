@@ -57,7 +57,7 @@ func (this *SqlDataModule) Stop() {
 //PrintStatus 打印状态
 func (this *SqlDataModule) PrintStatus() string {
 	return fmt.Sprintf(
-		"\r\n		Data Module:	%d/%d	(RunNum/getnum)",
+		"\r\n		Sql Module          :%d/%d		(RunNum/getnum)",
 		len(this.playerlist),
 		atomic.AddInt64(&this.getnum, 0))
 }
