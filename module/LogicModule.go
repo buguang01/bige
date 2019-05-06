@@ -63,9 +63,10 @@ func (this *LogicModule) Stop() {
 //PrintStatus IModule 接口实现，打印状态
 func (mod *LogicModule) PrintStatus() string {
 	return fmt.Sprintf(
-		"\r\n		Logic Module:	%d/%d	(logicnum/get)",
+		"\r\n		Logic Module:	%d/%d/%d	(logicnum/get/run)",
 		len(mod.logicList),
-		atomic.AddInt64(&mod.getnum, 0))
+		atomic.AddInt64(&mod.getnum, 0),
+		atomic.AddInt64(&mod.currnum, 0))
 }
 
 //AddMsg 发消息给逻辑协程处理
