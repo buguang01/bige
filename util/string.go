@@ -205,6 +205,14 @@ func (str *String) ToFloatV() float64 {
 	return v
 }
 
+func (str *String) ToBoolV() bool {
+	v, err := strconv.ParseBool(str.ToString())
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 /*
   str := NewString("abcde")
   str.Substring(0, 2)
