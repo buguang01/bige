@@ -3,6 +3,7 @@ package model
 import (
 	"buguang01/gsframe/loglogic"
 	"database/sql"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql" //注册MYSQL
 )
@@ -18,9 +19,10 @@ import (
 // 如果是给专门的DB模块使用，这二个数就按你自己对应这个模块的协程数来定；
 // 差不多1：1就可以了。
 type MysqlConfigModel struct {
-	Dsn        string //数据库连接字符串
-	MaxOpenNum int  //最大连接数
-	MaxIdleNum int  //最大空闲连接数
+	Dsn         string        //数据库连接字符串
+	MaxOpenNum  int           //最大连接数
+	MaxIdleNum  int           //最大空闲连接数
+	MaxLifetime time.Duration //连接空闲等待时间（秒）
 }
 
 //MysqlAccess mysql连接器
@@ -35,6 +37,9 @@ func NewMysqlAccess(cgmodel *MysqlConfigModel) *MysqlAccess {
 	result := new(MysqlAccess)
 	result.cg = cgmodel
 	result.DBConobj, err = sql.Open("mysql", cgmodel.Dsn)
+	result.DBConobj.SetMaxOpenConns(cgmodel.MaxOpenNum)
+	result.DBConobj.SetMaxIdleConns(cgmodel.MaxIdleNum)
+	result.DBConobj.SetConnMaxLifetime(cgmodel.MaxLifetime * time.Second)
 	if err != nil {
 		loglogic.PFatal(err)
 		panic(err)
