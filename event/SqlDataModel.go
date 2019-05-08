@@ -25,7 +25,12 @@ func (this *SqlDataModel) GetUpTime() time.Duration {
 }
 
 func (this *SqlDataModel) UpDataSave(conndb *sql.DB) error {
-	return this.SaveFun(conndb, this.DataDBModel)
+	if this.SaveFun != nil {
+		if this.DataDBModel != nil {
+			return this.SaveFun(conndb, this.DataDBModel)
+		}
+	}
+	return nil
 }
 
 type DataDBModel interface {
