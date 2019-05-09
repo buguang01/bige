@@ -168,6 +168,7 @@ memorythread:
 			}
 		case <-this.tk.C:
 			{
+				this.tk.Stop()
 				//时间到了，发消息出去
 				result := false
 				threads.Try(func() {

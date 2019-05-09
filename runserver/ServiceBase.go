@@ -5,6 +5,7 @@ import (
 	"buguang01/gsframe/module"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -44,7 +45,7 @@ func (gs *GameServiceBase) Run() {
 	}
 	//这里要柱塞等关闭
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 Pstatus:
 	for {
