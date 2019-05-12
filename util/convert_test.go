@@ -6,9 +6,11 @@ import (
 	"testing"
 )
 
-func TestConvert(t *testing.T) {
-	b := []byte("1001")
-	var v int = 0
-	util.Convert.ByteToAll(b, &v)
-	fmt.Println(v)
+func TestBinary(t *testing.T) {
+	bin := util.NewBinaryByLen(4, 1)
+	bin.UpData(3, 1)
+	bin.UpData(2, 4)
+	fmt.Println(bin.ContainKey(2))
+	fmt.Println(bin.ContainKey(0))
+	fmt.Println(bin.ToValuesJson())
 }

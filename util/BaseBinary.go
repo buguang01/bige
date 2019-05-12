@@ -50,16 +50,19 @@ func (this *BaseBinary) UpData(index, val int) bool {
 	dlen := int(this.OneDataBitNum)
 	ai := (index / (8 / dlen))
 	bitnum := uint8(index % (8 / dlen) * dlen)
-	key := this.Data[ai]
 	if ai >= this.ArrayLen {
 		return false
 	}
+	key := this.Data[ai]
+
 	if this.OneDataBitNum == 8 {
 		key = bval
 	} else {
 		var tmp uint8 = (1 << this.OneDataBitNum) - 1
+		bval = bval & tmp
 		tmp = tmp << bitnum
 		tmp = key & ^tmp
+
 		key = uint8(tmp + (bval << bitnum))
 	}
 	this.Data[ai] = key
@@ -69,7 +72,7 @@ func (this *BaseBinary) UpData(index, val int) bool {
 
 func (this *BaseBinary) ToValuesJson() []interface{} {
 	dlen := int(this.OneDataBitNum)
-	result := make([]interface{}, this.ArrayLen*dlen/8)
+	result := make([]interface{}, this.ArrayLen*8/dlen)
 	index := 0
 	for k := 0; k < this.ArrayLen; k++ {
 		key := this.Data[k]
