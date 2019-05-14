@@ -65,7 +65,7 @@ func (this *MemoryModule) Start() {
 //Stop 停止
 func (this *MemoryModule) Stop() {
 	this.mgGo.CloseWait()
-	loglogic.PStatus("Momery Module Start!")
+	loglogic.PStatus("Momery Module Stop!")
 }
 
 //PrintStatus 打印状态

@@ -77,6 +77,9 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 					select {
 					case upmdarr := <-this.chandata:
 						{
+							if len(upmdarr) == 0 {
+								continue
+							}
 							upmd := upmdarr[0]
 							logicth, ok := this.playerlist[upmd.GetKeyID()]
 							if !ok {
@@ -105,7 +108,11 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 					return
 				}
 				atomic.AddInt64(&this.getnum, 1)
+				if len(upmdarr) == 0 {
+					continue
+				}
 				upmd := upmdarr[0]
+
 				logicth, ok := this.playerlist[upmd.GetKeyID()]
 				if !ok {
 					//新开一个协程
