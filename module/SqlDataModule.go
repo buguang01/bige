@@ -21,12 +21,12 @@ type SqlDataConfig struct {
 
 //SqlDataModule 数据库的模块
 type SqlDataModule struct {
-	playerlist map[int]*DataThread      //操作数据库的列表
-	keylist    []int                    //key列表，用来间隔遍历
-	chandata   chan event.ISqlDataModel //消息信道
-	mgGo       *threads.ThreadGo        //子协程管理器
-	getnum     int64                    //收到的消息数
-	conndb     *sql.DB                  //数据库对象
+	playerlist map[int]*DataThread        //操作数据库的列表
+	keylist    []int                      //key列表，用来间隔遍历
+	chandata   chan []event.ISqlDataModel //消息信道
+	mgGo       *threads.ThreadGo          //子协程管理器
+	getnum     int64                      //收到的消息数
+	conndb     *sql.DB                    //数据库对象
 	cg         *SqlDataConfig
 }
 
@@ -35,7 +35,7 @@ func NewSqlDataModule(config *SqlDataConfig, sqldb *sql.DB) *SqlDataModule {
 	result.cg = config
 	result.playerlist = make(map[int]*DataThread, config.InitNum)
 	result.keylist = make([]int, 0, config.InitNum)
-	result.chandata = make(chan event.ISqlDataModel, config.ChanNum)
+	result.chandata = make(chan []event.ISqlDataModel, config.ChanNum)
 	result.mgGo = threads.NewThreadGo()
 	result.conndb = sqldb
 	return result
@@ -61,7 +61,7 @@ func (this *SqlDataModule) PrintStatus() string {
 		len(this.playerlist),
 		atomic.AddInt64(&this.getnum, 0))
 }
-func (this *SqlDataModule) AddMsg(msg event.ISqlDataModel) {
+func (this *SqlDataModule) AddMsg(msg ...event.ISqlDataModel) {
 	// atomic.AddInt64(&this.currnum, 1)
 	this.chandata <- msg
 }
@@ -75,8 +75,9 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 			{
 				for {
 					select {
-					case upmd := <-this.chandata:
+					case upmdarr := <-this.chandata:
 						{
+							upmd := upmdarr[0]
 							logicth, ok := this.playerlist[upmd.GetKeyID()]
 							if !ok {
 								//新开一个协程
@@ -85,7 +86,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 								logicth.Start(this)
 							}
 							logicth.UpTime = util.GetCurrTime()
-							logicth.SendChan <- upmd
+							logicth.SendChan <- upmdarr
 						}
 					default:
 						{
@@ -98,12 +99,13 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 					}
 				}
 			}
-		case upmd, ok := <-this.chandata:
+		case upmdarr, ok := <-this.chandata:
 			{
 				if !ok {
 					return
 				}
 				atomic.AddInt64(&this.getnum, 1)
+				upmd := upmdarr[0]
 				logicth, ok := this.playerlist[upmd.GetKeyID()]
 				if !ok {
 					//新开一个协程
@@ -113,7 +115,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 					logicth.Start(this)
 				}
 				logicth.UpTime = util.GetCurrTime()
-				logicth.SendChan <- upmd
+				logicth.SendChan <- upmdarr
 			}
 		case <-tk.C:
 			{
@@ -141,7 +143,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 type DataThread struct {
 	KeyID     int                            //用户主键
 	updatamap map[string]event.ISqlDataModel //缓存要更新的数据
-	SendChan  chan event.ISqlDataModel       //收要更新的数据
+	SendChan  chan []event.ISqlDataModel     //收要更新的数据
 	Conndb    *sql.DB                        //数据库连接对象
 	UpTime    time.Time                      //更新时间
 }
@@ -150,7 +152,7 @@ func newDataThread(keyid int, conndb *sql.DB, channum int) *DataThread {
 	result := new(DataThread)
 	result.KeyID = keyid
 	result.updatamap = make(map[string]event.ISqlDataModel)
-	result.SendChan = make(chan event.ISqlDataModel, channum)
+	result.SendChan = make(chan []event.ISqlDataModel, channum)
 	result.Conndb = conndb
 
 	return result
@@ -182,35 +184,42 @@ threadhandle:
 		select {
 		case <-ctx.Done():
 			{
-				for upmd := range this.SendChan {
-					this.updatamap[upmd.GetDataKey()] = upmd
+				for upmdarr := range this.SendChan {
+					for _, upmd := range upmdarr {
+						this.updatamap[upmd.GetDataKey()] = upmd
+					}
 				}
 				threads.Try(this.Save, nil, nil)
 				break threadhandle
 			}
-		case upmd, ok := <-this.SendChan:
+		case upmdarr, ok := <-this.SendChan:
 			{
 				if !ok {
 					threads.Try(this.Save, nil, nil)
 					break threadhandle
 				}
-				this.updatamap[upmd.GetDataKey()] = upmd
-				nd := upmd.GetUpTime()
+				nd := time.Hour
+				for _, upmd := range upmdarr {
+					this.updatamap[upmd.GetDataKey()] = upmd
+					if nd > upmd.GetUpTime() {
+						nd = upmd.GetUpTime()
+						ndt := time.Now().Add(nd)
+						if dt.Unix() < time.Now().Unix() {
+							//比当前时间小，说明可能是停下来了要重新设置时间
+							dt = ndt
+							tk.Reset(nd)
+						} else if dt.Unix() > ndt.Unix() {
+							dt = ndt
+							tk.Reset(nd)
+						}
+					}
+				}
 				if nd <= 0 {
 					threads.Try(this.Save, nil, nil)
 					// atomic.AddInt64(&mod.savenum, 1)
 					tk.Stop()
-				} else {
-					ndt := time.Now().Add(nd)
-					if dt.Unix() < time.Now().Unix() {
-						//比当前时间小，说明可能是停下来了要重新设置时间
-						dt = ndt
-						tk.Reset(nd)
-					} else if dt.Unix() > ndt.Unix() {
-						dt = ndt
-						tk.Reset(nd)
-					}
 				}
+
 			}
 		case <-tk.C:
 			{
