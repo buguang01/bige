@@ -1,4 +1,4 @@
-module gsframe
+module github.com/buguang01/gsframe
 
 go 1.12
 
