@@ -1,7 +1,7 @@
 package util_test
 
 import (
-	"github.com/buguang01/gsframe/util"
+	"buguang01/gsframe/util"
 	"fmt"
 	"testing"
 )

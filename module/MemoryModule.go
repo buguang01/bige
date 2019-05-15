@@ -15,9 +15,9 @@ DoneRun,当服务器要关闭的时候，会运行的方法。可以用于关闭
 
 */
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
-	"github.com/buguang01/gsframe/threads"
+	"buguang01/gsframe/event"
+	"buguang01/gsframe/loglogic"
+	"buguang01/gsframe/threads"
 	"context"
 	"fmt"
 	"sync/atomic"

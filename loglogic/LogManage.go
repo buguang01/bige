@@ -2,7 +2,7 @@ package loglogic
 
 //有一个日志的协程用来收消息，然后再发给具体的写文件的协程
 import (
-	"github.com/buguang01/gsframe/util"
+	"buguang01/gsframe/util"
 	"fmt"
 	"os"
 	"path"

@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
+	"buguang01/gsframe/loglogic"
 	"encoding/json"
 	"net/http"
 )

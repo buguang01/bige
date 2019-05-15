@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/buguang01/gsframe/util"
+	"buguang01/gsframe/util"
 )
 
 //IMsgEvent 所有的MsgEventBase都要实现这个

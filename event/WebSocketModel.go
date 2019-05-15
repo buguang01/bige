@@ -1,8 +1,8 @@
 package event
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
-	"github.com/buguang01/gsframe/threads"
+	"buguang01/gsframe/loglogic"
+	"buguang01/gsframe/threads"
 	"encoding/json"
 
 	"golang.org/x/net/websocket"

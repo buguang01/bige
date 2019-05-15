@@ -1,7 +1,7 @@
 package event_test
 
 import (
-	"github.com/buguang01/gsframe/event"
+	"buguang01/gsframe/event"
 	"fmt"
 	"testing"
 )

@@ -1,8 +1,8 @@
 package model_test
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
-	"github.com/buguang01/gsframe/model"
+	"buguang01/gsframe/loglogic"
+	"buguang01/gsframe/model"
 	"testing"
 )
 

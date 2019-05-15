@@ -1,10 +1,10 @@
 package module_test
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
-	"github.com/buguang01/gsframe/module"
-	"github.com/buguang01/gsframe/threads"
+	"buguang01/gsframe/event"
+	"buguang01/gsframe/loglogic"
+	"buguang01/gsframe/module"
+	"buguang01/gsframe/threads"
 	"context"
 	"fmt"
 	"testing"

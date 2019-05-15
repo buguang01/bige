@@ -1,7 +1,7 @@
 package loglogic
 
 import (
-	"github.com/buguang01/gsframe/util"
+	"buguang01/gsframe/util"
 	"fmt"
 	"log"
 	"os"
