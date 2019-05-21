@@ -80,3 +80,8 @@ func (builder *StringBuilder) Clear() *StringBuilder {
 func (builder *StringBuilder) ToString() string {
 	return builder.buffer.String()
 }
+
+//IsEmpty 是否为空字符串
+func (builder *StringBuilder) IsEmpty() bool {
+	return builder.buffer.Len() == 0
+}
