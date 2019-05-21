@@ -6,6 +6,9 @@ import (
 
 //StringToIntArray 字符串转int数组
 func StringToIntArray(str string, sub string) []int {
+	if str == "0" || str == "" {
+		return make([]int, 0)
+	}
 	arr := strings.Split(str, sub)
 	result := make([]int, len(arr))
 	for i, v := range arr {
