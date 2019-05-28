@@ -87,7 +87,7 @@ func (this *ThreadGo) CloseWait() {
 	this.Wg.Wait()
 }
 
-//Go 在当前线程上跑
+//Go 在新前线程上跑
 func (this *ThreadGo) Go(f func(ctx context.Context)) {
 	this.Wg.Add(1)
 	GoTry(func() {
