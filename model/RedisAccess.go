@@ -53,7 +53,7 @@ func (access *RedisAccess) dial() (redis.Conn, error) {
 }
 
 func (access *RedisAccess) testOnBorrow(c redis.Conn, t time.Time) error {
-	loglogic.PDebug("redis testOnBorrow.")
+	// loglogic.PDebug("redis testOnBorrow.")
 	if time.Since(t) < time.Minute {
 		return nil
 	}
