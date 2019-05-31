@@ -6,8 +6,8 @@ import (
 	"syscall"
 	"time"
 
-	"buguang01/gsframe/loglogic"
-	"buguang01/gsframe/module"
+	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/gsframe/module"
 )
 
 //GameConfigModel 游戏服务器的配置

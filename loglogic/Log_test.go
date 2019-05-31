@@ -1,7 +1,7 @@
 package loglogic_test
 
 import (
-	"buguang01/gsframe/loglogic"
+	"github.com/buguang01/gsframe/loglogic"
 	"testing"
 )
 

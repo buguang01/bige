@@ -1,7 +1,7 @@
 package model
 
 import (
-	"buguang01/gsframe/loglogic"
+	"github.com/buguang01/gsframe/loglogic"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
