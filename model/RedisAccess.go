@@ -106,3 +106,19 @@ func (rd *RedisHandleModel) DictSet(dname, key string, val interface{}, dt int64
 func (rd *RedisHandleModel) DictGet(dname, key string) (reply interface{}, err error) {
 	return rd.Do("hget", dname, key)
 }
+
+// func (rd *RedisHandleModel)Sub(){
+// 	psc:= redis.PubSubConn{rd.Conn}
+// 	psc.PSubscribe("abc")
+// 	for{
+// 		switch v:=psc.Receive().(type){
+// 		case redis.Subscription:
+
+// 		case redis.Message:
+
+// 		case redis.PMessage:
+
+// 		}
+// 	}
+// 	redis.
+// }
