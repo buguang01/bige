@@ -2,7 +2,7 @@ package module
 
 import (
 	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/threads"
 	"encoding/json"
 	"fmt"
@@ -71,14 +71,14 @@ func (mod *HTTPModule) Start() {
 	go func() {
 		mod.wg.Add(1)
 		defer mod.wg.Done()
-		loglogic.PStatus("HTTP Module Start!")
+		Logger.PStatus("HTTP Module Start!")
 		err := mod.httpServer.ListenAndServe()
 		if err != nil {
 			if err == http.ErrServerClosed {
-				loglogic.PStatus("Http run Server closed under requeset!!")
+				Logger.PStatus("Http run Server closed under requeset!!")
 				// log.Print("Server closed under requeset!!")
 			} else {
-				loglogic.PFatal("Server closed unexpecteed:" + err.Error())
+				Logger.PFatal("Server closed unexpecteed:" + err.Error())
 				// log.Fatal("Server closed unexpecteed!!")
 			}
 		}
@@ -88,10 +88,10 @@ func (mod *HTTPModule) Start() {
 //Stop IModule 接口实现
 func (mod *HTTPModule) Stop() {
 	if err := mod.httpServer.Close(); err != nil {
-		loglogic.PError(err, "Close HttpModule:")
+		Logger.PError(err, "Close HttpModule:")
 	}
 	mod.wg.Wait()
-	loglogic.PStatus("HTTP Module Stop")
+	Logger.PStatus("HTTP Module Stop")
 }
 
 //PrintStatus IModule 接口实现，打印状态
@@ -118,13 +118,13 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("json error."))
 		return
 	}
-	loglogic.PInfo(request)
+	Logger.PInfo(request)
 	threads.Try(
 		func() {
 			action := etjs.GetAction()
 			call := mod.RouteFun(action)
 			if call == nil {
-				loglogic.PInfo("nothing action:%d!", action)
+				Logger.PInfo("nothing action:%d!", action)
 				w.Write([]byte("nothing action"))
 			} else {
 				g := threads.NewGoRun(
@@ -139,7 +139,7 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 					break
 				case <-timeout.C:
 					//上面那个可能还没有运行完，但是超时了要返回了
-					loglogic.PDebug("http time msg:%s", request)
+					Logger.PDebug("http time msg:%s", request)
 					if mod.TimeoutFun != nil {
 						mod.TimeoutFun(etjs, w)
 					}
@@ -149,7 +149,7 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 			}
 		},
 		func(err interface{}) {
-			loglogic.PFatal(err)
+			Logger.PFatal(err)
 			//如果出异常了，跑这里
 			w.Write([]byte("catch!"))
 		},

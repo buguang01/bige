@@ -16,7 +16,7 @@ DoneRun,当服务器要关闭的时候，会运行的方法。可以用于关闭
 */
 import (
 	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/threads"
 	"context"
 	"fmt"
@@ -59,13 +59,13 @@ func (this *MemoryModule) Init() {
 //Start 启动
 func (this *MemoryModule) Start() {
 	this.mgGo.Go(this.Handle)
-	loglogic.PStatus("Momery Module Start!")
+	Logger.PStatus("Momery Module Start!")
 }
 
 //Stop 停止
 func (this *MemoryModule) Stop() {
 	this.mgGo.CloseWait()
-	loglogic.PStatus("Momery Module Stop!")
+	Logger.PStatus("Momery Module Stop!")
 }
 
 //PrintStatus 打印状态

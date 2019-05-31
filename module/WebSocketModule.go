@@ -1,9 +1,6 @@
 package module
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
-	"github.com/buguang01/gsframe/threads"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +8,10 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/gsframe/event"
+	"github.com/buguang01/gsframe/threads"
 
 	"golang.org/x/net/websocket"
 )
@@ -86,14 +87,14 @@ func (mod *WebSocketModule) Start() {
 	go func() {
 		mod.wg.Add(1)
 		defer mod.wg.Done()
-		loglogic.PStatus("websocket Module Start!")
+		Logger.PStatus("websocket Module Start!")
 		err := mod.httpServer.ListenAndServe()
 		if err != nil {
 			if err == http.ErrServerClosed {
-				loglogic.PStatus("websocket run Server closed under requeset!!")
+				Logger.PStatus("websocket run Server closed under requeset!!")
 				// log.Print("Server closed under requeset!!")
 			} else {
-				loglogic.PFatal("Server closed unexpecteed:" + err.Error())
+				Logger.PFatal("Server closed unexpecteed:" + err.Error())
 				// log.Fatal("Server closed unexpecteed!!")
 			}
 		}
@@ -103,7 +104,7 @@ func (mod *WebSocketModule) Start() {
 //Stop IModule 接口实现
 func (mod *WebSocketModule) Stop() {
 	if err := mod.httpServer.Close(); err != nil {
-		loglogic.PError(err, "Close websocket Module:")
+		Logger.PError(err, "Close websocket Module:")
 	}
 	mod.wsmaplock.Lock()
 	m := mod.wsmap
@@ -112,7 +113,7 @@ func (mod *WebSocketModule) Stop() {
 	}
 	mod.wsmaplock.Unlock()
 	mod.wg.Wait()
-	loglogic.PStatus("websocket Module Stop.")
+	Logger.PStatus("websocket Module Stop.")
 }
 
 //PrintStatus IModule 接口实现，打印状态
@@ -145,15 +146,15 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 
 	//发消息来说明这个用户掉线了
 	defer func() {
-		loglogic.PInfo("websocket client closeing.")
+		Logger.PInfo("websocket client closeing.")
 		runobj.CloseWait() //要等下面的逻辑都处理完了，才可以运行下面的代码，保证保存的逻辑
 		//用来处理发生连接关闭的时候，要处理的事
 		if wsconn.CloseFun != nil {
 			wsconn.CloseFun(wsconn)
 		}
-		loglogic.PInfo("websocket client close.")
+		Logger.PInfo("websocket client close.")
 	}()
-	loglogic.PInfo("websocket client open!")
+	Logger.PInfo("websocket client open!")
 	runchan := make(chan bool, 8) //用来处理超时
 	threads.GoTry(
 		func() {
@@ -187,7 +188,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 						fmt.Println(err)
 					}
 				}
-				loglogic.PInfo(string(request[:readLen]))
+				Logger.PInfo(string(request[:readLen]))
 				etjs := make(event.JsonMap)
 				err = json.Unmarshal(request[:readLen], &etjs)
 				if err != nil {
@@ -197,7 +198,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 				code := etjs.GetAction() //["ACTION"]) //可能会出错，不知道有没有捕获
 				call := mod.RouteFun(code)
 				if call == nil {
-					loglogic.PInfo("nothing action:%d!", code)
+					Logger.PInfo("nothing action:%d!", code)
 				} else {
 					runchan <- true
 					call(etjs, wsconn, runobj) //调用委托的消息处理方法
@@ -232,7 +233,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	// 	code := util.Convert.ToInt32(etjs["ACTION"]) //可能会出错，不知道有没有捕获
 	// 	call := mod.RouteFun(code)
 	// 	if call == nil {
-	// 		loglogic.PInfo("nothing action:%d!", code)
+	// 		Logger.PInfo("nothing action:%d!", code)
 	// 	} else {
 	// 		call(etjs, conn, runobj) //调用委托好的消息处理方法
 	// 	}

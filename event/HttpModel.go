@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"encoding/json"
 	"net/http"
 )
@@ -21,6 +21,6 @@ func HTTPReplyMsg(w http.ResponseWriter, et JsonMap, resultcom int, jsdata JsonM
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
-	loglogic.PInfo(string(b))
+	Logger.PInfo(string(b))
 	w.Write(b)
 }

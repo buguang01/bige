@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -41,19 +41,19 @@ func (access *RedisAccess) dial() (redis.Conn, error) {
 		return nil, err
 	}
 	if access.cg.Password == "" {
-		loglogic.PDebug("redis dial.")
+		Logger.PDebug("redis dial.")
 		return c, err
 	}
 	if _, err := c.Do("AUTH", access.cg.Password); err != nil {
 		c.Close()
 		return nil, err
 	}
-	loglogic.PDebug("redis dial.")
+	Logger.PDebug("redis dial.")
 	return c, err
 }
 
 func (access *RedisAccess) testOnBorrow(c redis.Conn, t time.Time) error {
-	// loglogic.PDebug("redis testOnBorrow.")
+	// Logger.PDebug("redis testOnBorrow.")
 	if time.Since(t) < time.Minute {
 		return nil
 	}
@@ -70,7 +70,7 @@ func (access *RedisAccess) GetConn() *RedisHandleModel {
 //Close 关闭池子，一般只有关服的时候才用到
 func (access *RedisAccess) Close() {
 	access.DBConobj.Close()
-	loglogic.PDebug("redis close.")
+	Logger.PDebug("redis close.")
 
 }
 

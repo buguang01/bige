@@ -3,7 +3,7 @@ package event
 import (
 	"encoding/json"
 
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/threads"
 
 	"golang.org/x/net/websocket"
@@ -34,14 +34,14 @@ func WebSocketReplyMsg(wsmd *WebSocketModel, et JsonMap, resultcom int, jsdata J
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
-	loglogic.PInfo(string(b))
+	Logger.PInfo(string(b))
 	wsmd.Write(b)
 }
 
 //WebSocketSendMsg 主动给一个用户发消息
 func WebSocketSendMsg(wsmd *WebSocketModel, action int, jsdata JsonMap) {
 	if wsmd == nil {
-		loglogic.PDebug("WebSocket is nil.Action:%d,Jsdata:%v.", action, jsdata)
+		Logger.PDebug("WebSocket is nil.Action:%d,Jsdata:%v.", action, jsdata)
 		return
 	}
 	jsresult := make(JsonMap)
@@ -54,6 +54,6 @@ func WebSocketSendMsg(wsmd *WebSocketModel, action int, jsdata JsonMap) {
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
-	loglogic.PInfo(string(b))
+	Logger.PInfo(string(b))
 	wsmd.Write(b)
 }

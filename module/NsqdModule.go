@@ -2,7 +2,7 @@ package module
 
 import (
 	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/threads"
 	"github.com/buguang01/gsframe/util"
 	"context"
@@ -57,7 +57,7 @@ func (this *NsqdModule) Start() {
 	if err := this.consumer.ConnectToNSQLookupd(this.cg.NSQLookupdAddr); err != nil {
 		panic(err)
 	}
-	loglogic.PStatus("Nsqd Module Start!")
+	Logger.PStatus("Nsqd Module Start!")
 }
 
 //Stop 停止
@@ -66,7 +66,7 @@ func (this *NsqdModule) Stop() {
 	<-this.consumer.StopChan
 	this.mgGo.CloseWait()
 	this.producer.Stop()
-	loglogic.PStatus("Nsqd Module Stop!")
+	Logger.PStatus("Nsqd Module Stop!")
 }
 
 //PrintStatus 打印状态
@@ -102,7 +102,7 @@ func (this *NsqdModule) Handle(ctx context.Context) {
 							if err := this.producer.Publish(topic, buf); err != nil {
 								for this.PingNsq(ctx) == true {
 									if err := this.producer.Publish(topic, buf); err != nil {
-										loglogic.PFatal(err)
+										Logger.PFatal(err)
 										continue
 									} else {
 										break
@@ -135,7 +135,7 @@ func (this *NsqdModule) Handle(ctx context.Context) {
 					if err := this.producer.Publish(topic, buf); err != nil {
 						for this.PingNsq(ctx) == true {
 							if err := this.producer.Publish(topic, buf); err != nil {
-								loglogic.PFatal(err)
+								Logger.PFatal(err)
 								continue
 							} else {
 								break
@@ -158,7 +158,7 @@ func (this *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 		msg := new(event.NsqdMessage)
 		err = json.Unmarshal(message.Body, msg)
 		if err != nil {
-			loglogic.PError(err, "nsqd:%s", string(message.Body))
+			Logger.PError(err, "nsqd:%s", string(message.Body))
 		} else {
 			atomic.AddInt64(&this.getnum, 1)
 			this.mgGo.Go(func(ctx context.Context) {
@@ -213,7 +213,7 @@ func (this *NsqdModule) PingNsq(ctx context.Context) bool {
 			return true
 		} else {
 			k = (k + 1) % 10
-			loglogic.PError(err, "Nsqd Producer Pring Error")
+			Logger.PError(err, "Nsqd Producer Pring Error")
 			continue
 		}
 	}

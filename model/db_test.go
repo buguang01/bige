@@ -1,7 +1,7 @@
 package model_test
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/model"
 	"testing"
 )
@@ -21,8 +21,8 @@ func init() {
 
 //写事务的方式
 func TestDBTran(t *testing.T) {
-	loglogic.Init(0, "logs")
-	defer loglogic.LogClose()
+	Logger.Init(0, "logs")
+	defer Logger.LogClose()
 	db := DBExample.GetConnBegin()
 	defer func() {
 		if err := recover(); err != nil {

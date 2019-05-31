@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"database/sql"
 	"time"
 
@@ -41,10 +41,10 @@ func NewMysqlAccess(cgmodel *MysqlConfigModel) *MysqlAccess {
 	result.DBConobj.SetMaxIdleConns(cgmodel.MaxIdleNum)
 	result.DBConobj.SetConnMaxLifetime(cgmodel.MaxLifetime * time.Second)
 	if err != nil {
-		loglogic.PFatal(err)
+		Logger.PFatal(err)
 		panic(err)
 	}
-	loglogic.PDebug("mysql init.")
+	Logger.PDebug("mysql init.")
 	return result
 }
 
@@ -57,7 +57,7 @@ func (access *MysqlAccess) Ping() error {
 func (access *MysqlAccess) GetConnBegin() *sql.Tx {
 	result, err := access.DBConobj.Begin()
 	if err != nil {
-		// loglogic.PFatal(err)
+		// Logger.PFatal(err)
 		panic(err)
 	}
 	return result
@@ -71,7 +71,7 @@ func (access *MysqlAccess) GetDB() *sql.DB {
 //Close 关闭池子,只有关服的时候，才会用到这个，一般不用也没有关系，也会自己关闭的
 func (access *MysqlAccess) Close() {
 	access.DBConobj.Close()
-	loglogic.PDebug("mysql close.")
+	Logger.PDebug("mysql close.")
 }
 
 //NewRead 出一个读取器

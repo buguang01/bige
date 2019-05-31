@@ -6,7 +6,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/module"
 )
 
@@ -59,7 +59,7 @@ Pstatus:
 			for _, md := range gs.mlist {
 				ps += md.PrintStatus()
 			}
-			loglogic.PStatus(ps)
+			Logger.PStatus(ps)
 		}
 	}
 	gs.isrun = false

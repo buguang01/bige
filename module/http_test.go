@@ -2,7 +2,7 @@ package module_test
 
 import (
 	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/module"
 	"fmt"
 	"math/rand"
@@ -12,7 +12,7 @@ import (
 )
 
 func TestModule(t *testing.T) {
-	loglogic.Init(0, "logs")
+	Logger.Init(0, "logs")
 	m := module.NewHTTPModule(&module.HTTPConfig{
 		HTTPAddr: ":8080",
 		Timeout:  10,
@@ -28,7 +28,7 @@ func TestModule(t *testing.T) {
 	time.Sleep(600 * time.Second)
 	m.Stop()
 
-	loglogic.LogClose()
+	Logger.LogClose()
 
 }
 

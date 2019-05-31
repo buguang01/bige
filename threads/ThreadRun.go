@@ -1,7 +1,7 @@
 package threads
 
 import (
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"context"
 	"sync"
 	"time"
@@ -24,7 +24,7 @@ func Try(f func(), catch func(interface{}), finally func()) {
 			if catch != nil {
 				catch(err)
 			} else {
-				loglogic.PFatal(err)
+				Logger.PFatal(err)
 			}
 		}
 	}()

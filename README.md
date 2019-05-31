@@ -29,7 +29,7 @@ QQ群号：441240897
 开发进度
 --------
 * 已完成的子功能：
-*   loglogic        日志管理器
+*   Logger        日志管理器
 *   HTTPModule      HTTP的收消息模块
 *   WebSocket       WebSocket收发消息模块
 *   LogicModule     业务逻辑模块，用来管理业务协程，可以让业务逻辑在指定KEY的协程上运行

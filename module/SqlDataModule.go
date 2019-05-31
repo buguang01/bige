@@ -2,7 +2,7 @@ package module
 
 import (
 	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/threads"
 	"github.com/buguang01/gsframe/util"
 	"context"
@@ -46,12 +46,12 @@ func (this *SqlDataModule) Init() {
 }
 func (this *SqlDataModule) Start() {
 	this.mgGo.Go(this.Handle)
-	loglogic.PStatus("SqlData Module Start!")
+	Logger.PStatus("SqlData Module Start!")
 
 }
 func (this *SqlDataModule) Stop() {
 	this.mgGo.CloseWait()
-	loglogic.PStatus("SqlData Module Start!")
+	Logger.PStatus("SqlData Module Start!")
 }
 
 //PrintStatus 打印状态
@@ -242,7 +242,7 @@ func (this *DataThread) Save() {
 	//保存数据
 	for _, data := range this.updatamap {
 		if err := data.UpDataSave(this.Conndb); err != nil {
-			loglogic.PError(err, " Data: %v ", data)
+			Logger.PError(err, " Data: %v ", data)
 		}
 	}
 	this.updatamap = make(map[string]event.ISqlDataModel)

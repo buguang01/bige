@@ -2,7 +2,7 @@ package module
 
 import (
 	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/loglogic"
+	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/threads"
 	"github.com/buguang01/gsframe/util"
 	"context"
@@ -50,14 +50,14 @@ func (this *LogicModule) Init() {
 
 func (this *LogicModule) Start() {
 	this.mgGo.Go(this.Hander)
-	loglogic.PStatus("Logic Module Start!")
+	Logger.PStatus("Logic Module Start!")
 }
 
 func (this *LogicModule) Stop() {
 	//但是子协程很有可能会再发消息出来走逻辑。这是要注意的点
 	// close(this.chanLogic) //可以在这里关是因为到这一步的时候，可以认为不会再有其他模块发东西过来了。
 	this.mgGo.CloseWait()
-	loglogic.PStatus("Logic Module Shop!")
+	Logger.PStatus("Logic Module Shop!")
 }
 
 //PrintStatus IModule 接口实现，打印状态
