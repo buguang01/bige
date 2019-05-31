@@ -20,16 +20,16 @@ import (
 
 //ToString 类型转到string
 func ToString(v interface{}) string {
-	switch v.(type) {
+	switch d := v.(type) {
 	case string:
-		return v.(string)
+		return d
 	case int:
-		return strconv.Itoa(v.(int))
+		return strconv.Itoa(d)
 
 	case int64:
-		return strconv.FormatInt(v.(int64), 10)
+		return strconv.FormatInt(d, 10)
 	case float64:
-		return strconv.FormatFloat(v.(float64), 'g', -1, 64)
+		return strconv.FormatFloat(d, 'g', -1, 64)
 	}
 	panic(fmt.Sprintf("%#v to string fail.", v))
 
