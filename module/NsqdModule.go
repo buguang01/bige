@@ -53,6 +53,7 @@ func (this *NsqdModule) Init() {
 	nsqcg.LookupdPollInterval = time.Duration(this.cg.LookupdPollInterval) * time.Millisecond
 	this.consumer, _ = nsq.NewConsumer(this.ServerID,
 		fmt.Sprintf("%s_channel", this.ServerID), nsqcg)
+	this.consumer.SetLogger(&nsqlogger{}, nsq.LogLevelError)
 	this.consumer.AddHandler(this)
 }
 
@@ -222,4 +223,16 @@ func (this *NsqdModule) PingNsq(ctx context.Context) bool {
 			continue
 		}
 	}
+}
+
+type nsqlogger struct{}
+
+func (this *nsqlogger) Output(calldepth int, s string) error {
+	Logger.PrintLog(&Logger.LogMsgModel{
+		Msg:   s,
+		LogLv: Logger.LogLevelstatuslevel + 1,
+		Stack: "",
+		KeyID: -1,
+	})
+	return nil
 }
