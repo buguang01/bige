@@ -1,23 +1,26 @@
 package module
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/threads"
-	"github.com/buguang01/gsframe/util"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"sync/atomic"
+	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/gsframe/event"
+	"github.com/buguang01/gsframe/threads"
+	"github.com/buguang01/gsframe/util"
 
 	"github.com/nsqio/go-nsq"
 )
 
 type NsqdConfig struct {
-	Addr           string //地址
-	NSQLookupdAddr string //nsqlookup 地址
-	ChanNum        int    //通道缓存空间
+	Addr                string //地址
+	NSQLookupdAddr      string //nsqlookup 地址
+	ChanNum             int    //通道缓存空间
+	LookupdPollInterval int    //去请求lookup nsq节点信息的时间（毫秒）
 }
 
 func NewNsqdModule(configmd *NsqdConfig, sid int) *NsqdModule {
@@ -46,8 +49,10 @@ func (this *NsqdModule) Init() {
 	this.chanList = make(chan *event.NsqdMessage, this.cg.ChanNum)
 	this.mgGo = threads.NewThreadGo()
 	this.producer, _ = nsq.NewProducer(this.cg.Addr, nsq.NewConfig())
+	nsqcg := nsq.NewConfig()
+	nsqcg.LookupdPollInterval = time.Duration(this.cg.LookupdPollInterval) * time.Millisecond
 	this.consumer, _ = nsq.NewConsumer(this.ServerID,
-		fmt.Sprintf("%s_channel", this.ServerID), nsq.NewConfig())
+		fmt.Sprintf("%s_channel", this.ServerID), nsqcg)
 	this.consumer.AddHandler(this)
 }
 
