@@ -18,9 +18,10 @@ type GameConfigModel struct {
 
 //GameServiceBase 游戏模块管理
 type GameServiceBase struct {
-	mlist []module.IModule
-	cg    *GameConfigModel
-	isrun bool
+	mlist             []module.IModule
+	cg                *GameConfigModel
+	isrun             bool
+	ServiceStopHander func() //当服务器被关掉的时候，先调用的方法
 }
 
 //NewGameService 生成一个新的游戏服务器
@@ -63,6 +64,9 @@ Pstatus:
 		}
 	}
 	gs.isrun = false
+	if gs.ServiceStopHander != nil {
+		gs.ServiceStopHander()
+	}
 	for i := len(gs.mlist) - 1; i >= 0; i-- {
 		md := gs.mlist[i]
 		md.Stop()
