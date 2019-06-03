@@ -21,6 +21,8 @@ type NsqdConfig struct {
 	NSQLookupdAddr      string //nsqlookup 地址
 	ChanNum             int    //通道缓存空间
 	LookupdPollInterval int    //去请求lookup nsq节点信息的时间（毫秒）
+	MaxInFlight         int    //可以同时访问的节点数
+
 }
 
 func NewNsqdModule(configmd *NsqdConfig, sid int) *NsqdModule {
@@ -51,6 +53,7 @@ func (this *NsqdModule) Init() {
 	this.producer, _ = nsq.NewProducer(this.cg.Addr, nsq.NewConfig())
 	nsqcg := nsq.NewConfig()
 	nsqcg.LookupdPollInterval = time.Duration(this.cg.LookupdPollInterval) * time.Millisecond
+	nsqcg.MaxInFlight = this.cg.MaxInFlight
 	this.consumer, _ = nsq.NewConsumer(this.ServerID,
 		fmt.Sprintf("%s_channel", this.ServerID), nsqcg)
 	this.consumer.SetLogger(&nsqlogger{}, nsq.LogLevelError)
