@@ -1,5 +1,5 @@
-github.com/buguang01/Logger v0.9.0 h1:kRKKumEizl5I/Me7czO3U1yIJTa/LakXzUrF2qEVJJw=
-github.com/buguang01/Logger v0.9.0/go.mod h1:pP9ykhimsno0xL6THkTZTxyNOSaFqw2DKWeYXYJBTh4=
+github.com/buguang01/Logger v0.9.1 h1:jUGoX8AQLWdsclqIIAU64N9C5o4Zqe1nfOvNpLu4xYw=
+github.com/buguang01/Logger v0.9.1/go.mod h1:pP9ykhimsno0xL6THkTZTxyNOSaFqw2DKWeYXYJBTh4=
 github.com/buguang01/util v1.0.0 h1:XG2vqqBgLOAHV/MQi/zmD9goe7YPX19toVcut8T7ac0=
 github.com/buguang01/util v1.0.0/go.mod h1:3qF2bg7+R1YsehEnVIgBoPMWT9PVWXHjrdwSphj/9HY=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
