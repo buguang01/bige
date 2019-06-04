@@ -4,7 +4,7 @@ import (
 	"github.com/buguang01/gsframe/event"
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/threads"
-	"github.com/buguang01/gsframe/util"
+	"github.com/buguang01/util"
 	"context"
 	"database/sql"
 	"fmt"
