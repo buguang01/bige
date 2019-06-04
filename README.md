@@ -15,21 +15,20 @@ QQ群号：441240897
 * [SqlDataModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
 * [WebSocketModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
 * [MemoryModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
+* [NsqdModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
 
 使用的第三方库
 --------
 * mysql : go get -u github.com/go-sql-driver/mysql
 * redis : go get -u github.com/garyburd/redigo
 * 打印颜色：go get -u github.com/gookit/color
+* Nsq   : go get -u github.com/nsqio/go-nsq
 
-借用库
--------
-* utils: go get -u github.com/typa01/go-utils
 
 开发进度
 --------
 * 已完成的子功能：
-*   Logger        日志管理器
+*   NsqdModule      与Nsq中间件通信的模块
 *   HTTPModule      HTTP的收消息模块
 *   WebSocket       WebSocket收发消息模块
 *   LogicModule     业务逻辑模块，用来管理业务协程，可以让业务逻辑在指定KEY的协程上运行
@@ -38,5 +37,4 @@ QQ群号：441240897
 *   event           收到的消息基础类型、module用到的一些信道数据结构
 *   model           mysql的模块、Redis的模块
 *   threads         协程管理
-*   util            通用基础模块（String、StringBuilder、TimeConvert、(WorkerID)SnowFlakeID、BaseData）
 
