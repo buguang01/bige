@@ -7,7 +7,7 @@ import (
 //UsingRead 读锁
 func UsingRead(lk *sync.RWMutex, f func()) {
 	lk.RLock()
-	defer lk.Unlock()
+	defer lk.RUnlock()
 	f()
 }
 
