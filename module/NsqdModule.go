@@ -167,7 +167,7 @@ func (this *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 	// fmt.Println(string(message.Body))
 	err = nil
 	this.mgGo.Try(func(ctx context.Context) {
-		if len(message.Body) == 0 {
+		if len(message.Body) <= 5 {
 			return
 		}
 		msg := new(event.NsqdMessage)
@@ -222,7 +222,7 @@ func (this *NsqdModule) AddMsgSync(msg *event.NsqdMessage) error {
 }
 
 func (this *NsqdModule) registerTopic() {
-	if err := this.producer.Publish(this.ServerID, []byte("")); err != nil {
+	if err := this.producer.Publish(this.ServerID, []byte(" ")); err != nil {
 		panic(err)
 	}
 }
