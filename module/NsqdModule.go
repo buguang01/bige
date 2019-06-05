@@ -66,6 +66,9 @@ func (this *NsqdModule) Start() {
 	if err := this.consumer.ConnectToNSQLookupd(this.cg.NSQLookupdAddr); err != nil {
 		panic(err)
 	}
+	{
+		this.registerTopic()
+	}
 	Logger.PStatus("Nsqd Module Start!")
 }
 
@@ -164,6 +167,9 @@ func (this *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 	// fmt.Println(string(message.Body))
 	err = nil
 	this.mgGo.Try(func(ctx context.Context) {
+		if len(message.Body) == 0 {
+			return
+		}
 		msg := new(event.NsqdMessage)
 		err = json.Unmarshal(message.Body, msg)
 		if err != nil {
@@ -213,6 +219,12 @@ func (this *NsqdModule) AddMsgSync(msg *event.NsqdMessage) error {
 
 	}
 	return nil
+}
+
+func (this *NsqdModule) registerTopic() {
+	if err := this.producer.Publish(this.ServerID, []byte("")); err != nil {
+		panic(err)
+	}
 }
 
 func (this *NsqdModule) PingNsq(ctx context.Context) bool {
