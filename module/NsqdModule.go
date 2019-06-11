@@ -234,7 +234,11 @@ func (this *NsqdModule) PingNsq(ctx context.Context) bool {
 			return true
 		} else {
 			k = (k + 1) % 10
-			Logger.PError(err, "Nsqd Producer Pring Error")
+			if k == 0 {
+				Logger.PError(err, "Nsqd Producer Pring Error")
+			}
+			time.Sleep(1 * time.Second)
+
 			continue
 		}
 	}
