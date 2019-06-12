@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/buguang01/Logger"
 	"time"
+
+	"github.com/buguang01/Logger"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -93,13 +94,9 @@ func (rd *RedisHandleModel) Get(key string) (reply interface{}, err error) {
 	return rd.Do("get", key)
 }
 
-//DictSet 写入指定(字典\map)表中的指定的KEY，val，还有时间dt；如果dt==-1，表示没有时间
-func (rd *RedisHandleModel) DictSet(dname, key string, val interface{}, dt int64) (reply interface{}, err error) {
-	if dt > 0 {
-		return rd.Do("hset", dname, key, val, "EX", dt)
-	}
+//DictSet 写入指定(字典\map)表中的指定的KEY，val
+func (rd *RedisHandleModel) DictSet(dname, key string, val interface{}) (reply interface{}, err error) {
 	return rd.Do("hset", dname, key, val)
-
 }
 
 //DictGet 读指定(字典\map)表中的指定key的值
