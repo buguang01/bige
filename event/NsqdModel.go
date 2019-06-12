@@ -1,6 +1,16 @@
 package event
 
-type NsqdHander func(msg *NsqdMessage)
+//INsqdMessage 消息接口
+type INsqdMessage interface {
+	GetSendID() int
+	GetSendSID() string
+	SetSendSID(sid string)
+	GetActionID() int
+	GetData() interface{}
+	GetTopic() string
+}
+
+type NsqdHander func(msg INsqdMessage)
 
 type NsqdMessage struct {
 	SendID   int         //发信息用户ID
@@ -10,11 +20,30 @@ type NsqdMessage struct {
 	Topic    string      //目标
 }
 
-func NewNsqdMessage(mid, actid int, topic string, data interface{}) *NsqdMessage {
+func NewNsqdMessage(mid, actid int, topic string, data interface{}) INsqdMessage {
 	result := new(NsqdMessage)
 	result.SendID = mid
 	result.ActionID = actid
 	result.Topic = topic
 	result.Data = data
 	return result
+}
+
+func (this *NsqdMessage) GetSendID() int {
+	return this.SendID
+}
+func (this *NsqdMessage) GetSendSID() string {
+	return this.SendSID
+}
+func (this *NsqdMessage) SetSendSID(sid string) {
+	this.SendSID = sid
+}
+func (this *NsqdMessage) GetActionID() int {
+	return this.ActionID
+}
+func (this *NsqdMessage) GetData() interface{} {
+	return this.Data
+}
+func (this *NsqdMessage) GetTopic() string {
+	return this.Topic
 }

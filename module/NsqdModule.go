@@ -33,22 +33,28 @@ func NewNsqdModule(configmd *NsqdConfig, sid int) *NsqdModule {
 }
 
 type NsqdModule struct {
-	mgGo     *threads.ThreadGo       //子协程管理器
-	getnum   int64                   //收到的总消息数
-	sendnum  int64                   //发出去的消息
-	consumer *nsq.Consumer           //消费者
-	producer *nsq.Producer           //生产者
-	chanList chan *event.NsqdMessage //收到的消息
-	cg       NsqdConfig              //配置
-	ServerID string                  //服务器
-	RouteFun event.NsqdHander
+	mgGo      *threads.ThreadGo       //子协程管理器
+	getnum    int64                   //收到的总消息数
+	sendnum   int64                   //发出去的消息
+	consumer  *nsq.Consumer           //消费者
+	producer  *nsq.Producer           //生产者
+	chanList  chan event.INsqdMessage //收到的消息
+	cg        NsqdConfig              //配置
+	ServerID  string                  //服务器
+	RouteFun  event.NsqdHander
+	GetNewMsg func() event.INsqdMessage //拿到消息接口对象
 }
 
 //Init 初始化
 func (this *NsqdModule) Init() {
+	if this.GetNewMsg == nil {
+		this.GetNewMsg = func() event.INsqdMessage {
+			return new(event.NsqdMessage)
+		}
+	}
 	this.getnum = 0
 	this.sendnum = 0
-	this.chanList = make(chan *event.NsqdMessage, this.cg.ChanNum)
+	this.chanList = make(chan event.INsqdMessage, this.cg.ChanNum)
 	this.mgGo = threads.NewThreadGo()
 	this.producer, _ = nsq.NewProducer(this.cg.Addr, nsq.NewConfig())
 	nsqcg := nsq.NewConfig()
@@ -108,8 +114,8 @@ func (this *NsqdModule) Handle(ctx context.Context) {
 					select {
 					case msg := <-this.chanList:
 						{
-							msg.SendSID = this.ServerID
-							topic := msg.Topic
+							msg.SetSendSID(this.ServerID)
+							topic := msg.GetTopic()
 							buf, _ := json.Marshal(msg)
 							if err := this.producer.Publish(topic, buf); err != nil {
 								for this.PingNsq(ctx) == true {
@@ -134,15 +140,15 @@ func (this *NsqdModule) Handle(ctx context.Context) {
 				if !ok {
 					break
 				}
-				if msg.Topic == this.ServerID {
+				if msg.GetTopic() == this.ServerID {
 					//是发给自己服务器的
 					this.mgGo.Go(func(ctx context.Context) {
 						this.RouteFun(msg)
 					})
 				} else {
 					//发给别的服务器的
-					msg.SendSID = this.ServerID
-					topic := msg.Topic
+					msg.SetSendSID(this.ServerID)
+					topic := msg.GetTopic()
 					buf, _ := json.Marshal(msg)
 					if err := this.producer.Publish(topic, buf); err != nil {
 						for this.PingNsq(ctx) == true {
@@ -170,7 +176,7 @@ func (this *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 		if len(message.Body) <= 5 {
 			return
 		}
-		msg := new(event.NsqdMessage)
+		msg := this.GetNewMsg()
 		err = json.Unmarshal(message.Body, msg)
 		if err != nil {
 			Logger.PError(err, "nsqd:%s", string(message.Body))
@@ -187,8 +193,8 @@ func (this *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 }
 
 //AddMsg 发送消息出去
-func (this *NsqdModule) AddMsg(msg *event.NsqdMessage) bool {
-	msg.SendSID = this.ServerID
+func (this *NsqdModule) AddMsg(msg event.INsqdMessage) bool {
+	msg.SetSendSID(this.ServerID)
 	select {
 	case <-this.mgGo.Ctx.Done():
 		return false
@@ -204,13 +210,13 @@ func (this *NsqdModule) AddMsg(msg *event.NsqdMessage) bool {
 }
 
 //AddMsgSync 同步发消息出去
-func (this *NsqdModule) AddMsgSync(msg *event.NsqdMessage) error {
+func (this *NsqdModule) AddMsgSync(msg event.INsqdMessage) error {
 	select {
 	case <-this.mgGo.Ctx.Done():
 		return errors.New("ctx done")
 	default:
-		msg.SendSID = this.ServerID
-		topic := msg.Topic
+		msg.SetSendSID(this.ServerID)
+		topic := msg.GetTopic()
 		buf, _ := json.Marshal(msg)
 		if err := this.producer.Publish(topic, buf); err != nil {
 			return err
