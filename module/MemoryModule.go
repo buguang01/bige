@@ -15,13 +15,14 @@ DoneRun,当服务器要关闭的时候，会运行的方法。可以用于关闭
 
 */
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/threads"
 	"context"
 	"fmt"
 	"sync/atomic"
 	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/gsframe/event"
+	"github.com/buguang01/gsframe/threads"
 )
 
 //MemoryConfig 内存模块配置
@@ -185,4 +186,9 @@ memorythread:
 		}
 	}
 
+}
+
+//GetNum 内存管理对象数量
+func (this *MemoryModule) GetNum() int {
+	return len(this.mdList)
 }

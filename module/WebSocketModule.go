@@ -278,3 +278,8 @@ func (mod *WebSocketModule) mapdel(conn *websocket.Conn) {
 		delete(mod.wsmap, conn)
 	}
 }
+
+//GetPlayerNum用户连接数量
+func (mod *WebSocketModule) GetPlayerNum() int {
+	return len(mod.wsmap)
+}
