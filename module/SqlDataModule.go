@@ -1,15 +1,16 @@
 package module
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/threads"
-	"github.com/buguang01/util"
 	"context"
 	"database/sql"
 	"fmt"
 	"sync/atomic"
 	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/gsframe/event"
+	"github.com/buguang01/gsframe/threads"
+	"github.com/buguang01/util"
 )
 
 type SqlDataConfig struct {
@@ -242,7 +243,7 @@ func (this *DataThread) Save() {
 	//保存数据
 	for _, data := range this.updatamap {
 		if err := data.UpDataSave(this.Conndb); err != nil {
-			Logger.PError(err, " Data: %v ", data)
+			Logger.PError(err, " keyid:%d;DataKey:%s; ", data.GetKeyID(), data.GetDataKey())
 		}
 	}
 	this.updatamap = make(map[string]event.ISqlDataModel)

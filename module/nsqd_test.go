@@ -13,8 +13,8 @@ func TestNsqd(t *testing.T) {
 	Logger.Init(1, "logs")
 
 	nsqd := module.NewNsqdModule(&module.NsqdConfig{
-		Addr:                "192.168.39.97:4150",
-		NSQLookupdAddr:      "192.168.39.97:4161",
+		Addr:                []string{"192.168.39.97:4150"},
+		NSQLookupdAddr:      []string{"192.168.39.97:4161"},
 		ChanNum:             100,
 		LookupdPollInterval: 1000,
 		MaxInFlight:         1000,

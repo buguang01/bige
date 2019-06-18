@@ -17,11 +17,11 @@ import (
 )
 
 type NsqdConfig struct {
-	Addr                string //地址
-	NSQLookupdAddr      string //nsqlookup 地址
-	ChanNum             int    //通道缓存空间
-	LookupdPollInterval int    //去请求lookup nsq节点信息的时间（毫秒）
-	MaxInFlight         int    //可以同时访问的节点数
+	Addr                []string //地址
+	NSQLookupdAddr      []string //nsqlookup 地址
+	ChanNum             int      //通道缓存空间
+	LookupdPollInterval int      //去请求lookup nsq节点信息的时间（毫秒）
+	MaxInFlight         int      //可以同时访问的节点数
 
 }
 
@@ -56,7 +56,11 @@ func (this *NsqdModule) Init() {
 	this.sendnum = 0
 	this.chanList = make(chan event.INsqdMessage, this.cg.ChanNum)
 	this.mgGo = threads.NewThreadGo()
-	this.producer, _ = nsq.NewProducer(this.cg.Addr, nsq.NewConfig())
+	var err error
+	this.producer, err = nsq.NewProducer(this.cg.Addr[0], nsq.NewConfig())
+	if err != nil {
+		panic(err)
+	}
 	nsqcg := nsq.NewConfig()
 	nsqcg.LookupdPollInterval = time.Duration(this.cg.LookupdPollInterval) * time.Millisecond
 	nsqcg.MaxInFlight = this.cg.MaxInFlight
@@ -64,12 +68,13 @@ func (this *NsqdModule) Init() {
 		fmt.Sprintf("%s_channel", this.ServerID), nsqcg)
 	this.consumer.SetLogger(&nsqlogger{}, nsq.LogLevelError)
 	this.consumer.AddHandler(this)
+
 }
 
 //Start 启动
 func (this *NsqdModule) Start() {
 	this.mgGo.Go(this.Handle)
-	if err := this.consumer.ConnectToNSQLookupd(this.cg.NSQLookupdAddr); err != nil {
+	if err := this.consumer.ConnectToNSQLookupds(this.cg.NSQLookupdAddr); err != nil {
 		panic(err)
 	}
 	{
@@ -242,6 +247,16 @@ func (this *NsqdModule) PingNsq(ctx context.Context) bool {
 			k = (k + 1) % 10
 			if k == 0 {
 				Logger.PError(err, "Nsqd Producer Pring Error")
+				//要换个连接
+				for _, addr := range this.cg.Addr {
+					if p, err := nsq.NewProducer(addr, nsq.NewConfig()); err == nil {
+						if err = p.Ping(); err == nil {
+							this.producer.Stop()
+							this.producer = p
+							break
+						}
+					}
+				}
 			}
 			time.Sleep(1 * time.Second)
 
