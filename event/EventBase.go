@@ -74,6 +74,10 @@ func (js JsonMap) GetMap(key string) JsonMap {
 	return JsonMap(v)
 }
 
+func (js JsonMap) GetIntArray(key string) []int {
+	return js.GetArray(key).GetIntArray()
+}
+
 //JsonArray JSON数组
 type JsonArray []interface{}
 
@@ -85,4 +89,12 @@ func (js JsonArray) GetArray(index int) JsonArray {
 func (js JsonArray) GetMap(index int) JsonMap {
 	v := js[index].(map[string]interface{})
 	return JsonMap(v)
+}
+
+func (js JsonArray) GetIntArray() []int {
+	result := make([]int, len(js))
+	for i, v := range js {
+		result[i] = util.NewStringAny(v).ToIntV()
+	}
+	return result
 }
