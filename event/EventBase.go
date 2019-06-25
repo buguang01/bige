@@ -64,5 +64,25 @@ func (js JsonMap) GetHash() string {
 	// return uint32(js["HASH"].(float64))
 }
 
+func (js JsonMap) GetArray(key string) JsonArray {
+	v := js[key].([]interface{})
+	return JsonArray(v)
+}
+
+func (js JsonMap) GetMap(key string) JsonMap {
+	v := js[key].(map[string]interface{})
+	return JsonMap(v)
+}
+
 //JsonArray JSON数组
 type JsonArray []interface{}
+
+func (js JsonArray) GetArray(index int) JsonArray {
+	v := js[index].([]interface{})
+	return JsonArray(v)
+}
+
+func (js JsonArray) GetMap(index int) JsonMap {
+	v := js[index].(map[string]interface{})
+	return JsonMap(v)
+}
