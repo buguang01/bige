@@ -64,16 +64,19 @@ func (js JsonMap) GetHash() string {
 	// return uint32(js["HASH"].(float64))
 }
 
+//返回一个JsonArray
 func (js JsonMap) GetArray(key string) JsonArray {
 	v := js[key].([]interface{})
 	return JsonArray(v)
 }
 
+//返回一个JsonMap
 func (js JsonMap) GetMap(key string) JsonMap {
 	v := js[key].(map[string]interface{})
 	return JsonMap(v)
 }
 
+//返回[]int
 func (js JsonMap) GetIntArray(key string) []int {
 	return js.GetArray(key).GetIntArray()
 }
