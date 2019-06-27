@@ -104,18 +104,37 @@ func (rd *RedisHandleModel) DictGet(dname, key string) (reply interface{}, err e
 	return rd.Do("hget", dname, key)
 }
 
-// func (rd *RedisHandleModel)Sub(){
-// 	psc:= redis.PubSubConn{rd.Conn}
-// 	psc.PSubscribe("abc")
-// 	for{
-// 		switch v:=psc.Receive().(type){
-// 		case redis.Subscription:
+//DelKey 删指定的KEY
+func (rd *RedisHandleModel) DelKey(dname string) (reply interface{}, err error) {
+	return rd.Do("del", dname)
+}
 
-// 		case redis.Message:
+//GetKeyList 返回指定KEY的列表，一般用来删除过期的KEY
+func (rd *RedisHandleModel) GetKeyList(dname string) (reply interface{}, err error) {
+	return rd.Do("scan", 0, "match", dname, 10000)
+}
 
-// 		case redis.PMessage:
+//RankGet 写入排行榜
+func (rd *RedisHandleModel) RankSet(rankName, key string, val float64) (reply interface{}, err error) {
+	return rd.Do("zadd", rankName, key, val)
+}
 
-// 		}
-// 	}
-// 	redis.
-// }
+//RankGetPage 排行榜多少到多少
+func (rd *RedisHandleModel) RankGetPage(rankName string, page1, page2 int) (reply interface{}, err error) {
+	return rd.Do("zrange", rankName, page1, page2, "withscores")
+}
+
+//RankGetNoRevByKey 指定的排名，从大到小
+func (rd *RedisHandleModel) RankGetNoRevByKey(rankName, key string) (reply interface{}, err error) {
+	return rd.Do("zrevrank", rankName, key)
+}
+
+//RankGetNoByKey 指定的排名  从小到大
+func (rd *RedisHandleModel) RankGetNoByKey(rankName, key string) (reply interface{}, err error) {
+	return rd.Do("zrank", rankName, key)
+}
+
+//RankDelByKey 删除指定排行榜中的指定key
+func (rd *RedisHandleModel) RankDelByKey(rankName, key string) (reply interface{}, err error) {
+	return rd.Do("zrem", rankName, key)
+}
