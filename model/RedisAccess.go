@@ -111,7 +111,7 @@ func (rd *RedisHandleModel) DelKey(dname string) (reply interface{}, err error) 
 
 //GetKeyList 返回指定KEY的列表，一般用来删除过期的KEY
 func (rd *RedisHandleModel) GetKeyList(dname string) (reply interface{}, err error) {
-	return rd.Do("scan", 0, "match", dname, 10000)
+	return rd.Do("scan", 0, "match", dname, "count", 10000)
 }
 
 //RankGet 写入排行榜
@@ -119,9 +119,14 @@ func (rd *RedisHandleModel) RankSet(rankName, key string, val float64) (reply in
 	return rd.Do("zadd", rankName, key, val)
 }
 
-//RankGetPage 排行榜多少到多少
+//RankGetPage 排行榜多少到多少 从小到大
 func (rd *RedisHandleModel) RankGetPage(rankName string, page1, page2 int) (reply interface{}, err error) {
 	return rd.Do("zrange", rankName, page1, page2, "withscores")
+}
+
+//RankGetRevPage 排行榜多少到多少 从大到小
+func (rd *RedisHandleModel) RankGetRevPage(rankName string, page1, page2 int) (reply interface{}, err error) {
+	return rd.Do("zrevrange", rankName, page1, page2, "withscores")
 }
 
 //RankGetNoRevByKey 指定的排名，从大到小
