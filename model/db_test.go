@@ -1,9 +1,10 @@
 package model_test
 
 import (
+	"testing"
+
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/gsframe/model"
-	"testing"
 )
 
 var (
@@ -12,11 +13,11 @@ var (
 )
 
 func init() {
-	DBExample = model.NewMysqlAccess(&model.MysqlConfigModel{
-		Dsn:        "root:6JkZsIybo25ls81a@tcp(192.168.39.97:3306)/test?charset=utf8",
-		MaxOpenNum: 2000,
-		MaxIdleNum: 1000,
-	})
+	// DBExample = model.NewMysqlAccess(&model.MysqlConfigModel{
+	// 	Dsn:        "root:6JkZsIybo25ls81a@tcp(192.168.39.97:3306)/test?charset=utf8",
+	// 	MaxOpenNum: 2000,
+	// 	MaxIdleNum: 1000,
+	// })
 }
 
 //写事务的方式

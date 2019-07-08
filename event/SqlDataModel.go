@@ -3,6 +3,8 @@ package event
 import (
 	"database/sql"
 	"time"
+
+	"github.com/buguang01/gsframe/model"
 )
 
 type SqlDataModel struct {
@@ -50,5 +52,5 @@ type ISqlDataModel interface {
 	//如果下次保存时间比你的大，那就用你的这个时间 替换掉
 	GetUpTime() time.Duration
 	//这是被调用的方法
-	UpDataSave(conndb *sql.DB) error
+	UpDataSave(conndb model.IConnDB) error
 }

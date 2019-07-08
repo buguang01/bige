@@ -14,10 +14,11 @@ import (
 )
 
 type SqlDataConfig struct {
-	Timeout    int //超时时间（秒）
-	InitNum    int //初始化内存空间
-	ChanNum    int //通道缓存空间
-	SubChanNum int //子通道缓存空间
+	Timeout    int  //超时时间（秒）
+	InitNum    int  //初始化内存空间
+	ChanNum    int  //通道缓存空间
+	SubChanNum int  //子通道缓存空间
+	TranSave   bool //是否是事务保存
 }
 
 //SqlDataModule 数据库的模块
@@ -52,7 +53,7 @@ func (this *SqlDataModule) Start() {
 }
 func (this *SqlDataModule) Stop() {
 	this.mgGo.CloseWait()
-	Logger.PStatus("SqlData Module Start!")
+	Logger.PStatus("SqlData Module Stop!")
 }
 
 //PrintStatus 打印状态
@@ -85,7 +86,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 							logicth, ok := this.playerlist[upmd.GetKeyID()]
 							if !ok {
 								//新开一个协程
-								logicth = newDataThread(upmd.GetKeyID(), this.conndb, this.cg.SubChanNum)
+								logicth = newDataThread(upmd.GetKeyID(), this.conndb, this.cg.SubChanNum, this.cg.TranSave)
 								this.playerlist[logicth.KeyID] = logicth
 								logicth.Start(this)
 							}
@@ -117,7 +118,7 @@ func (this *SqlDataModule) Handle(ctx context.Context) {
 				logicth, ok := this.playerlist[upmd.GetKeyID()]
 				if !ok {
 					//新开一个协程
-					logicth = newDataThread(upmd.GetKeyID(), this.conndb, this.cg.SubChanNum)
+					logicth = newDataThread(upmd.GetKeyID(), this.conndb, this.cg.SubChanNum, this.cg.TranSave)
 					this.playerlist[logicth.KeyID] = logicth
 					this.keylist = append(this.keylist, logicth.KeyID)
 					logicth.Start(this)
@@ -154,15 +155,16 @@ type DataThread struct {
 	SendChan  chan []event.ISqlDataModel     //收要更新的数据
 	Conndb    *sql.DB                        //数据库连接对象
 	UpTime    time.Time                      //更新时间
+	TranSave  bool                           //是否用事务做保存
 }
 
-func newDataThread(keyid int, conndb *sql.DB, channum int) *DataThread {
+func newDataThread(keyid int, conndb *sql.DB, channum int, tran bool) *DataThread {
 	result := new(DataThread)
 	result.KeyID = keyid
 	result.updatamap = make(map[string]event.ISqlDataModel)
 	result.SendChan = make(chan []event.ISqlDataModel, channum)
 	result.Conndb = conndb
-
+	result.TranSave = tran
 	return result
 }
 
@@ -222,7 +224,7 @@ threadhandle:
 						}
 					}
 				}
-				if nd <= 0 {
+				if nd <= 0 || this.TranSave { //如果是用事务，那就要立即运行
 					threads.Try(this.Save, nil, nil)
 					// atomic.AddInt64(&mod.savenum, 1)
 					tk.Stop()
@@ -241,10 +243,27 @@ threadhandle:
 //Save 执行保存
 func (this *DataThread) Save() {
 	//保存数据
-	for _, data := range this.updatamap {
-		if err := data.UpDataSave(this.Conndb); err != nil {
-			Logger.PError(err, " keyid:%d;DataKey:%s; ", data.GetKeyID(), data.GetDataKey())
+	if this.TranSave {
+		for _, data := range this.updatamap {
+			if err := data.UpDataSave(this.Conndb); err != nil {
+				Logger.PError(err, " keyid:%d;DataKey:%s; ", data.GetKeyID(), data.GetDataKey())
+			}
+
 		}
+	} else if tx, err := this.Conndb.Begin(); err == nil {
+		threads.Try(func() {
+			for _, data := range this.updatamap {
+				if err := data.UpDataSave(tx); err != nil {
+					Logger.PError(err, " keyid:%d;DataKey:%s; ", data.GetKeyID(), data.GetDataKey())
+					panic(err)
+				}
+			}
+			tx.Commit()
+		}, func(err interface{}) {
+			tx.Rollback()
+			Logger.PFatal(err)
+		}, nil)
 	}
+
 	this.updatamap = make(map[string]event.ISqlDataModel)
 }

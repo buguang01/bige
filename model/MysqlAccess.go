@@ -113,3 +113,8 @@ func (read *ReadRow) GetRowByColName(colname string) []byte {
 	}
 	return nil
 }
+
+type  IConnDB interface{
+	//用来执行SQL的
+	Exec(query string,args ...interface{})(sql.Result,error)
+}
