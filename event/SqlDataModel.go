@@ -1,7 +1,6 @@
 package event
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/buguang01/gsframe/model"
@@ -26,7 +25,7 @@ func (this *SqlDataModel) GetUpTime() time.Duration {
 	return this.UpTime
 }
 
-func (this *SqlDataModel) UpDataSave(conndb *sql.DB) error {
+func (this *SqlDataModel) UpDataSave(conndb model.IConnDB) error {
 	if this.SaveFun != nil {
 		if this.DataDBModel != nil {
 			return this.SaveFun(conndb, this.DataDBModel)
@@ -38,7 +37,7 @@ func (this *SqlDataModel) UpDataSave(conndb *sql.DB) error {
 type DataDBModel interface {
 }
 
-type UpDataSave func(conndb *sql.DB, datamd DataDBModel) error
+type UpDataSave func(conndb model.IConnDB, datamd DataDBModel) error
 
 //ISqlDataModel 保存DB的接口
 type ISqlDataModel interface {
