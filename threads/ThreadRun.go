@@ -1,10 +1,11 @@
 package threads
 
 import (
-	"github.com/buguang01/Logger"
 	"context"
 	"sync"
 	"time"
+
+	"github.com/buguang01/Logger"
 )
 
 //GoTry 在新线程上跑
@@ -95,6 +96,18 @@ func (this *ThreadGo) Go(f func(ctx context.Context)) {
 	}, nil, func() {
 		this.Wg.Done()
 	})
+}
+
+//SubGo返回可关掉的子协程
+func (this *ThreadGo) SubGo(f func(ctx context.Context)) context.CancelFunc {
+	ctx, cal := context.WithCancel(this.Ctx)
+	this.Wg.Add(1)
+	GoTry(func() {
+		f(ctx)
+	}, nil, func() {
+		this.Wg.Done()
+	})
+	return cal
 }
 
 //GoTry 在新协程上跑

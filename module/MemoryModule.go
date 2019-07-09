@@ -106,6 +106,20 @@ func (this *MemoryModule) reListenMsg(data event.IMemoryModel) {
 	}
 }
 
+//用来主动关掉服务的方法，关掉了服务找到的关服务器的逻辑，所以不会调用UnloadRun
+func (this *MemoryModule) DelListenMsg(data event.IMemoryModel) {
+	select {
+	case <-this.mgGo.Ctx.Done():
+	default:
+		{
+			msg := new(event.MemoryMsg)
+			msg.CmdType = 3
+			msg.IMemoryModel = data
+			this.chandata <- msg
+		}
+	}
+}
+
 func (this *MemoryModule) Handle(ctx context.Context) {
 	for {
 		select {
@@ -130,9 +144,10 @@ func (this *MemoryModule) Handle(ctx context.Context) {
 							th.DataMemory = cmd.IMemoryModel
 							this.mdList[key] = th
 							//启动
-							this.mgGo.Go(func(ctx context.Context) {
+							cal := this.mgGo.SubGo(func(ctx context.Context) {
 								th.Handle(ctx, this)
 							})
+							th.cancel = cal
 							atomic.AddInt64(&this.loadNum, 1)
 						}
 					}
@@ -140,6 +155,15 @@ func (this *MemoryModule) Handle(ctx context.Context) {
 					{
 						_, ok := this.mdList[key]
 						if ok {
+							delete(this.mdList, key)
+							atomic.AddInt64(&this.unloadNum, 1)
+						}
+					}
+				case 3: //主动关掉
+					{
+						th, ok := this.mdList[key]
+						if ok {
+							th.cancel()
 							delete(this.mdList, key)
 							atomic.AddInt64(&this.unloadNum, 1)
 						}
@@ -154,6 +178,7 @@ type MemoryThread struct {
 	Key        string      //主键
 	tk         *time.Timer //计时器
 	DataMemory event.IMemoryModel
+	cancel     context.CancelFunc //关掉的方法
 }
 
 func (this *MemoryThread) Handle(ctx context.Context, mg *MemoryModule) {
@@ -165,6 +190,7 @@ memorythread:
 			{
 				//管理器要关闭了
 				threads.Try(this.DataMemory.DoneRun, nil, nil)
+				// mg.reListenMsg(this.DataMemory)
 				break memorythread
 			}
 		case <-this.tk.C:
