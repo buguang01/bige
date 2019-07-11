@@ -181,6 +181,7 @@ func (this *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 		if len(message.Body) <= 5 {
 			return
 		}
+		Logger.PDebug("Nsqd Msg:%s", string(message.Body))
 		msg := this.GetNewMsg()
 		err = json.Unmarshal(message.Body, msg)
 		if err != nil {
