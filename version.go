@@ -1,4 +1,4 @@
 package gsframe
 
 //VERSION
-const VERSION = "1.0.11"
+const VERSION = "1.0.12"
