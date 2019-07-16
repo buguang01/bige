@@ -1,15 +1,16 @@
 package module
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/threads"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/gsframe/event"
+	"github.com/buguang01/gsframe/threads"
 )
 
 //HTTPConfig httpmodule的配置
@@ -121,8 +122,10 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 	Logger.PInfo(request)
 	threads.Try(
 		func() {
+			ip := req.RemoteAddr
 			action := etjs.GetAction()
 			call := mod.RouteFun(action)
+			etjs["IP"] = ip
 			if call == nil {
 				Logger.PInfo("nothing action:%d!", action)
 				w.Write([]byte("nothing action"))
