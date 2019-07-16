@@ -40,8 +40,8 @@ type WebSocketModule struct {
 	wsmap     map[*websocket.Conn]bool //所有的连接
 	wsmaplock sync.Mutex               //上面那个对象的锁
 
-	RouteFun func(code int) event.WebSocketCall //用来生成事件处理器的工厂
-
+	RouteFun           func(code int) event.WebSocketCall //用来生成事件处理器的工厂
+	WebSocketOnlineFun func(conn *websocket.Conn) string  //连接成功后
 	// wslist         map[uint]*WsConnModel    //websocket 列表
 	// wsclosefunlist map[*websocket.Conn]func() //如果socket关闭的时候调用
 	// wslock         sync.RWMutex               //对上面那个列表的锁
@@ -143,18 +143,21 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	//发给下面的连接对象，可以自定义一些信息和回调
 	wsconn := new(event.WebSocketModel)
 	wsconn.Conn = conn
-
+	wsname := conn.Request().RemoteAddr
+	if mod.WebSocketOnlineFun != nil {
+		wsname = mod.WebSocketOnlineFun(conn)
+	}
 	//发消息来说明这个用户掉线了
 	defer func() {
-		Logger.PInfo("websocket client closeing.")
+		Logger.PInfo("%s websocket client closeing.", wsname)
 		runobj.CloseWait() //要等下面的逻辑都处理完了，才可以运行下面的代码，保证保存的逻辑
 		//用来处理发生连接关闭的时候，要处理的事
 		if wsconn.CloseFun != nil {
 			wsconn.CloseFun(wsconn)
 		}
-		Logger.PInfo("websocket client close.")
+		Logger.PInfo("%s websocket client close.", wsname)
 	}()
-	Logger.PInfo("websocket client open!")
+	Logger.PInfo("%s websocket client open!", wsname)
 	runchan := make(chan bool, 8) //用来处理超时
 	threads.GoTry(
 		func() {
