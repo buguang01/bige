@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"time"
 
 	"github.com/buguang01/Logger"
@@ -102,6 +103,30 @@ func (rd *RedisHandleModel) DictSet(dname, key string, val interface{}) (reply i
 //DictGet 读指定(字典\map)表中的指定key的值
 func (rd *RedisHandleModel) DictGet(dname, key string) (reply interface{}, err error) {
 	return rd.Do("hget", dname, key)
+}
+
+//DictGetAll 读指定字典表中的所有Key和值
+func (rd *RedisHandleModel) DictGetAll(dname string) (reply interface{}, err error) {
+	return rd.Do("hgetall", dname)
+}
+
+//DictGetAllByStringArray 读指定字典表中的所有Key和值,返回[]string
+func (rd *RedisHandleModel) DictGetAllByStringArray(dname string) (result []string, err error) {
+
+	reply, err := rd.DictGetAll(dname)
+	if err != nil {
+		return nil, err
+	}
+	arr, ok := reply.([]interface{})
+	if !ok {
+		return nil, errors.New("interface to []interface error.")
+	}
+	result = make([]string, len(arr))
+	for i, v := range arr {
+		result[i] = string(v.([]byte))
+	}
+	return result, nil
+
 }
 
 //DelKey 删指定的KEY
