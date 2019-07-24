@@ -143,21 +143,22 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	//发给下面的连接对象，可以自定义一些信息和回调
 	wsconn := new(event.WebSocketModel)
 	wsconn.Conn = conn
+	wsconn.KeyID = -1
 	wsname := conn.Request().RemoteAddr
 	if mod.WebSocketOnlineFun != nil {
 		wsname = mod.WebSocketOnlineFun(conn)
 	}
 	//发消息来说明这个用户掉线了
 	defer func() {
-		Logger.PInfo("%s websocket client closeing.", wsname)
+		Logger.PInfoKey("%s websocket client closeing.", wsconn.KeyID, wsname)
 		runobj.CloseWait() //要等下面的逻辑都处理完了，才可以运行下面的代码，保证保存的逻辑
 		//用来处理发生连接关闭的时候，要处理的事
 		if wsconn.CloseFun != nil {
 			wsconn.CloseFun(wsconn)
 		}
-		Logger.PInfo("%s websocket client close.", wsname)
+		Logger.PInfoKey("%s websocket client close.", wsconn.KeyID, wsname)
 	}()
-	Logger.PInfo("%s websocket client open!", wsname)
+	Logger.PInfoKey("%s websocket client open!", wsconn.KeyID, wsname)
 	runchan := make(chan bool, 8) //用来处理超时
 	threads.GoTry(
 		func() {
@@ -188,10 +189,11 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 						//fmt.Println("客户端断开链接，")
 						break listen
 					} else {
-						fmt.Println(err)
+						Logger.PErrorKey(err, "websocket error.", wsconn.KeyID)
+						// fmt.Println(err)
 					}
 				}
-				Logger.PInfo(string(request[:readLen]))
+				Logger.PInfoKey(string(request[:readLen]), wsconn.KeyID)
 				etjs := make(event.JsonMap)
 				err = json.Unmarshal(request[:readLen], &etjs)
 				if err != nil {
@@ -201,7 +203,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 				code := etjs.GetAction() //["ACTION"]) //可能会出错，不知道有没有捕获
 				call := mod.RouteFun(code)
 				if call == nil {
-					Logger.PInfo("nothing action:%d!", code)
+					Logger.PInfoKey("nothing action:%d!", wsconn.KeyID, code)
 				} else {
 					runchan <- true
 					call(etjs, wsconn, runobj) //调用委托的消息处理方法

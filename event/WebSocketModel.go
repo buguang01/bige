@@ -14,6 +14,7 @@ type WebSocketModel struct {
 	*websocket.Conn
 	CloseFun WebSocketClose //关闭连接时的方法
 	ConInfo  interface{}    //自定义的连接信息，给上层逻辑使用
+	KeyID    int            //用来标记的ID
 }
 
 //WebSocketCall websocket调用方法定义
@@ -34,7 +35,7 @@ func WebSocketReplyMsg(wsmd *WebSocketModel, et JsonMap, resultcom int, jsdata J
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
-	Logger.PInfo(string(b))
+	Logger.PInfoKey(string(b), wsmd.KeyID)
 	wsmd.Write(b)
 }
 
@@ -54,6 +55,6 @@ func WebSocketSendMsg(wsmd *WebSocketModel, action int, jsdata JsonMap) {
 		jsresult["JSDATA"] = struct{}{}
 	}
 	b, _ := json.Marshal(jsresult)
-	Logger.PInfo(string(b))
+	Logger.PInfoKey(string(b), wsmd.KeyID)
 	wsmd.Write(b)
 }
