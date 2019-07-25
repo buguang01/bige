@@ -1,18 +1,19 @@
 package module_test
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/module"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/bige/event"
+	"github.com/buguang01/bige/module"
 )
 
 func TestModule(t *testing.T) {
-	Logger.Init(0, "logs")
+	Logger.Init(0, "logs", Logger.LogModeFmt)
 	m := module.NewHTTPModule(&module.HTTPConfig{
 		HTTPAddr: ":8080",
 		Timeout:  10,

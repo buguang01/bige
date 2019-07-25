@@ -1,9 +1,10 @@
 package event
 
 import (
-	"github.com/buguang01/Logger"
-	"encoding/json"
 	"net/http"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/bige/json"
 )
 
 //HTTPcall http的调用方法定义

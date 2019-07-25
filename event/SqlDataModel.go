@@ -3,7 +3,7 @@ package event
 import (
 	"time"
 
-	"github.com/buguang01/gsframe/model"
+	"github.com/buguang01/bige/model"
 )
 
 type SqlDataModel struct {

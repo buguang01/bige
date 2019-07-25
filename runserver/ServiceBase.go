@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/module"
+	"github.com/buguang01/bige/module"
 )
 
 //GameConfigModel 游戏服务器的配置

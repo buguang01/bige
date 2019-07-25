@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/model"
+	"github.com/buguang01/bige/model"
 )
 
 var (

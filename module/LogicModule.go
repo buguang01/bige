@@ -1,14 +1,15 @@
 package module
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/threads"
-	"github.com/buguang01/util"
 	"context"
 	"fmt"
 	"sync/atomic"
 	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/bige/event"
+	"github.com/buguang01/bige/threads"
+	"github.com/buguang01/util"
 )
 
 //逻辑模块

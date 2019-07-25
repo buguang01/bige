@@ -21,8 +21,8 @@ import (
 	"time"
 
 	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/gsframe/threads"
+	"github.com/buguang01/bige/event"
+	"github.com/buguang01/bige/threads"
 )
 
 //MemoryConfig 内存模块配置

@@ -1,9 +1,10 @@
 package model
 
 import (
-	"github.com/buguang01/Logger"
 	"database/sql"
 	"time"
+
+	"github.com/buguang01/Logger"
 
 	_ "github.com/go-sql-driver/mysql" //注册MYSQL
 )
@@ -114,7 +115,7 @@ func (read *ReadRow) GetRowByColName(colname string) []byte {
 	return nil
 }
 
-type  IConnDB interface{
+type IConnDB interface {
 	//用来执行SQL的
-	Exec(query string,args ...interface{})(sql.Result,error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
 }

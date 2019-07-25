@@ -1,10 +1,9 @@
 package event
 
 import (
-	"encoding/json"
-
 	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/threads"
+	"github.com/buguang01/bige/json"
+	"github.com/buguang01/bige/threads"
 
 	"golang.org/x/net/websocket"
 )

@@ -6,11 +6,11 @@ import (
 
 	"github.com/buguang01/Logger"
 
-	"github.com/buguang01/gsframe/module"
+	"github.com/buguang01/bige/module"
 )
 
 func TestNsqd(t *testing.T) {
-	Logger.Init(1, "logs")
+	Logger.Init(1, "logs", Logger.LogModeFmt)
 
 	nsqd := module.NewNsqdModule(&module.NsqdConfig{
 		Addr:                []string{"192.168.39.97:4150"},

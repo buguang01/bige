@@ -1,4 +1,4 @@
-gsframe
+bige
 =======
 这是一个游戏服务器的基础框架。（golang）
 
@@ -10,12 +10,12 @@ QQ群号：441240897
 --------
 文档
 --------
-* [HTTPMoudle](https://github.com/buguang01/gsframe/blob/master/module/README.md)
-* [LogicMoudle](https://github.com/buguang01/gsframe/blob/master/module/README.md)
-* [SqlDataModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
-* [WebSocketModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
-* [MemoryModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
-* [NsqdModule](https://github.com/buguang01/gsframe/blob/master/module/README.md)
+* [HTTPMoudle](https://github.com/buguang01/bige/blob/master/module/README.md)
+* [LogicMoudle](https://github.com/buguang01/bige/blob/master/module/README.md)
+* [SqlDataModule](https://github.com/buguang01/bige/blob/master/module/README.md)
+* [WebSocketModule](https://github.com/buguang01/bige/blob/master/module/README.md)
+* [MemoryModule](https://github.com/buguang01/bige/blob/master/module/README.md)
+* [NsqdModule](https://github.com/buguang01/bige/blob/master/module/README.md)
 
 使用的第三方库
 --------

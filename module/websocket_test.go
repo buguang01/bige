@@ -1,18 +1,19 @@
 package module_test
 
 import (
-	"github.com/buguang01/gsframe/event"
-	"github.com/buguang01/Logger"
-	"github.com/buguang01/gsframe/module"
-	"github.com/buguang01/gsframe/threads"
 	"context"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/buguang01/Logger"
+	"github.com/buguang01/bige/event"
+	"github.com/buguang01/bige/module"
+	"github.com/buguang01/bige/threads"
 )
 
 func TestWebSocket(t *testing.T) {
-	Logger.Init(0, "logs")
+	Logger.Init(0, "logs", Logger.LogModeFmt)
 	m := module.NewWSModule(&module.WebSocketConfig{
 		Addr:      ":8080",
 		Timeout:   10,
