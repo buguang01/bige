@@ -189,7 +189,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 						//fmt.Println("客户端断开链接，")
 						break listen
 					} else {
-						Logger.PErrorKey(err, "websocket error.", wsconn.KeyID)
+						//Logger.PErrorKey(err, "websocket error.", wsconn.KeyID)
 						// fmt.Println(err)
 					}
 				}
