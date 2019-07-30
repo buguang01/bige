@@ -81,6 +81,10 @@ type RedisHandleModel struct {
 	redis.Conn
 }
 
+func (rd *RedisHandleModel) Dispose() {
+	rd.Close()
+}
+
 //Set 写入指定的KEY，val，还有时间dt；如果dt==-1，表示没有时间
 func (rd *RedisHandleModel) Set(key string, val interface{}, dt int64) (reply interface{}, err error) {
 	if dt > 0 {
@@ -141,7 +145,12 @@ func (rd *RedisHandleModel) GetKeyList(dname string) (reply interface{}, err err
 
 //RankGet 写入排行榜
 func (rd *RedisHandleModel) RankSet(rankName, key string, val float64) (reply interface{}, err error) {
-	return rd.Do("zadd", rankName, key, val)
+	return rd.Do("zadd", rankName, val, key)
+}
+
+//RankAddSet 累加写入排行榜数据
+func (rd *RedisHandleModel) RankAddSet(rankName, key string, val float64) (reply interface{}, err error) {
+	return rd.Do("zincrby", rankName, val, key)
 }
 
 //RankGetPage 排行榜多少到多少 从小到大
