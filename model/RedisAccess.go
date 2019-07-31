@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/buguang01/Logger"
+	"github.com/buguang01/util"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -154,26 +155,145 @@ func (rd *RedisHandleModel) RankAddSet(rankName, key string, val float64) (reply
 }
 
 //RankGetPage 排行榜多少到多少 从小到大
-func (rd *RedisHandleModel) RankGetPage(rankName string, page1, page2 int) (reply interface{}, err error) {
-	return rd.Do("zrange", rankName, page1, page2, "withscores")
+func (rd *RedisHandleModel) RankGetPage(rankName string, page1, page2 int) ([]*RankInfoModel, error) {
+	reply, err := rd.Do("zrange", rankName, page1, page2, "withscores")
+	if err != nil {
+		return nil, err
+	}
+	arr := reply.([]interface{})
+	result := make([]*RankInfoModel, len(arr)/2)
+	rno := page1
+	for i := 0; i < len(arr); i += 2 {
+		rno++
+		md := new(RankInfoModel)
+		md.RankNo = rno
+		md.KeyID = util.NewStringAny(arr[i])
+		md.Val = util.NewStringAny(arr[i+1]).ToFloatV()
+		result[i/2] = md
+	}
+	return result, nil
 }
 
-//RankGetRevPage 排行榜多少到多少 从大到小
-func (rd *RedisHandleModel) RankGetRevPage(rankName string, page1, page2 int) (reply interface{}, err error) {
-	return rd.Do("zrevrange", rankName, page1, page2, "withscores")
-}
-
-//RankGetNoRevByKey 指定的排名，从大到小
-func (rd *RedisHandleModel) RankGetNoRevByKey(rankName, key string) (reply interface{}, err error) {
-	return rd.Do("zrevrank", rankName, key)
-}
-
-//RankGetNoByKey 指定的排名  从小到大
-func (rd *RedisHandleModel) RankGetNoByKey(rankName, key string) (reply interface{}, err error) {
-	return rd.Do("zrank", rankName, key)
+//RankRevGetPage 排行榜多少到多少 从大到小
+func (rd *RedisHandleModel) RankRevGetPage(rankName string, page1, page2 int) ([]*RankInfoModel, error) {
+	reply, err := rd.Do("zrevrange", rankName, page1, page2, "withscores")
+	if err != nil {
+		return nil, err
+	}
+	arr := reply.([]interface{})
+	result := make([]*RankInfoModel, len(arr)/2)
+	rno := page1
+	for i := 0; i < len(arr); i += 2 {
+		rno++
+		md := new(RankInfoModel)
+		md.RankNo = rno
+		md.KeyID = util.NewStringAny(arr[i])
+		md.Val = util.NewStringAny(arr[i+1]).ToFloatV()
+		result[i/2] = md
+	}
+	return result, nil
 }
 
 //RankDelByKey 删除指定排行榜中的指定key
 func (rd *RedisHandleModel) RankDelByKey(rankName, key string) (reply interface{}, err error) {
 	return rd.Do("zrem", rankName, key)
+}
+
+//获取排名（从大到小）
+func (rd *RedisHandleModel) RankRevGetNo(rankName, key string) (result int, err error) {
+	reply, err := rd.Do("zrevrank", rankName, key)
+	if err != nil {
+		return -1, err
+	}
+	return util.NewStringAny(reply).ToIntV(), err
+}
+
+//获取排名（从小到大）
+func (rd *RedisHandleModel) RankGetNo(rankName, key string) (result int, err error) {
+	reply, err := rd.Do("zrank", rankName, key)
+	if err != nil {
+		return -1, err
+	}
+	return util.NewStringAny(reply).ToIntV(), err
+}
+
+//获取指定排行榜上Key的Val
+func (rd *RedisHandleModel) RankGetVal(rankName, key string) (result float64, err error) {
+	reply, err := rd.Do("zscore", rankName, key)
+	if err != nil {
+		return -1, err
+	}
+	return util.NewStringAny(reply).ToFloatV(), err
+}
+
+//获取排行榜从小到大的排名信息
+func (rd *RedisHandleModel) RankGetInfo(rankName, key string) (result *RankInfoModel, err error) {
+	result = new(RankInfoModel)
+	result.RankNo, err = rd.RankGetNo(rankName, key)
+	if err != nil {
+		return nil, err
+	}
+	result.Val, err = rd.RankGetVal(rankName, key)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+//获取排行榜从大到小的排名信息
+func (rd *RedisHandleModel) RankRevGetInfo(rankName, key string) (result *RankInfoModel, err error) {
+	result = new(RankInfoModel)
+	result.RankNo, err = rd.RankRevGetNo(rankName, key)
+	if err != nil {
+		return nil, err
+	}
+	result.Val, err = rd.RankGetVal(rankName, key)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+//List的在尾后添加成员
+//"a","b"
+//写入"c"后为：”a“，”b“，”c“；"a"是索引0的位置
+func (rd *RedisHandleModel) ListRpush(rankName, val string) (reply interface{}, err error) {
+	return rd.Do("rpush", rankName, val)
+}
+
+//List的在尾后添加成员
+//"a","b"
+//写入"c"后为：”c“,”a“，”b“；"c"是索引0的位置
+func (rd *RedisHandleModel) ListLpush(rankName, val string) (reply interface{}, err error) {
+	return rd.Do("lpush", rankName, val)
+}
+
+//List 返回指定索引范围的数据
+func (rd *RedisHandleModel) ListGetArr(rankName string, stindex, num int) ([]string, error) {
+	reply, err := rd.Do("lrange", rankName, stindex, num)
+	if err != nil {
+		return nil, err
+	}
+	arr := reply.([]interface{})
+	result := make([]string, len(arr))
+	for i, v := range arr {
+		result[i] = string(v.([]byte))
+	}
+	return result, nil
+}
+
+//List 成员数量
+func (rd *RedisHandleModel) ListLen(rankName string) (int, error) {
+	reply, err := rd.Do("llen", rankName)
+	if err != nil {
+		return -1, err
+	}
+	result := util.NewStringAny(reply).ToIntV()
+	return result, nil
+}
+
+type RankInfoModel struct {
+	RankNo int          //名次
+	KeyID  *util.String //名字
+	Val    float64      //值
 }
