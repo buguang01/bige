@@ -112,7 +112,7 @@ func (mod *HTTPModule) Handle(w http.ResponseWriter, req *http.Request) {
 	atomic.AddInt64(&mod.getnum, 1)
 	atomic.AddInt64(&mod.runing, 1)
 	defer atomic.AddInt64(&mod.runing, -1)
-	timeout := time.NewTicker(mod.httpServer.WriteTimeout - 2*time.Second)
+	timeout := time.NewTimer(mod.httpServer.WriteTimeout - 2*time.Second)
 	request := req.FormValue("json")
 	etjs := make(event.JsonMap)
 	err := json.Unmarshal([]byte(request), &etjs)

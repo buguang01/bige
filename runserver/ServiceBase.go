@@ -48,10 +48,10 @@ func (gs *GameServiceBase) Run() {
 	//这里要柱塞等关闭
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
+	t := time.NewTicker(gs.cg.PStatusTime * time.Second)
 Pstatus:
 	for {
-		t := time.NewTicker(gs.cg.PStatusTime * time.Second)
+
 		select {
 		case <-c: //退出
 			break Pstatus
