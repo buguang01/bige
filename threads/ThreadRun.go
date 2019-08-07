@@ -142,7 +142,7 @@ func (this *ThreadGo) Try(f func(ctx context.Context), catch func(interface{}), 
 		})
 }
 
-func TimeoutGo(f func(), ticker time.Ticker, timeoutfunc func()) {
+func TimeoutGo(f func(), ticker time.Timer, timeoutfunc func()) {
 	result := make(chan struct{})
 
 	GoTry(f, nil, func() {
