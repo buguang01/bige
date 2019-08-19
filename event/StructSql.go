@@ -13,7 +13,7 @@ import (
 //按接口查询数据
 func DataGetByID(conndb *sql.DB, v IStructSql) *sql.Rows {
 	sqlstr := MarshalQsql(v, v.GetTableName())
-	result, err := conndb.Query(sqlstr, v.QueryArray())
+	result, err := conndb.Query(sqlstr, v.QueryArray()...)
 	if err != nil {
 		panic(err)
 	}
@@ -150,7 +150,7 @@ func (this *SqlDataStructModel) GetUpTime() time.Duration {
 func (this *SqlDataStructModel) UpDataSave(conndb model.IConnDB) error {
 	if this.DataDBModel != nil {
 		sqlstr := MarshalUpSql(this.DataDBModel, this.DataDBModel.GetTableName())
-		_, err := conndb.Exec(sqlstr, this.DataDBModel.ParmArray())
+		_, err := conndb.Exec(sqlstr, this.DataDBModel.ParmArray()...)
 		return err
 	}
 	return nil
