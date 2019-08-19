@@ -243,7 +243,7 @@ threadhandle:
 //Save 执行保存
 func (this *DataThread) Save() {
 	//保存数据
-	if this.TranSave {
+	if !this.TranSave {
 		for _, data := range this.updatamap {
 			if err := data.UpDataSave(this.Conndb); err != nil {
 				Logger.PError(err, " keyid:%d;DataKey:%s; ", data.GetKeyID(), data.GetDataKey())
