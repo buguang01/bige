@@ -83,6 +83,12 @@ func NewThreadGoBySub(ctx context.Context) *ThreadGo {
 	return reuslt
 }
 
+func NewThreadGoByGo(thgo *ThreadGo) *ThreadGo {
+	result := new(ThreadGo)
+	result.Ctx, result.Cal = context.WithCancel(thgo.Ctx)
+	return result
+}
+
 func (this *ThreadGo) CloseWait() {
 	this.Cal()
 	this.Wg.Wait()

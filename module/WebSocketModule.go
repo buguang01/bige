@@ -1,6 +1,7 @@
 package module
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,12 +31,13 @@ type WebSocketConfig struct {
 
 //WebSocketModule socket监听模块
 type WebSocketModule struct {
-	Addr       string           //HTTP监听的地址
-	httpServer *http.Server     //HTTP请求的对象
-	cg         *WebSocketConfig //从配置表中读进来的数据
-	wg         sync.WaitGroup   //用来确定是不是关闭了
-	getnum     int64            //收到的总消息数
-	sendnum    int64            //当前在处理的消息数
+	Addr       string            //HTTP监听的地址
+	httpServer *http.Server      //HTTP请求的对象
+	cg         *WebSocketConfig  //从配置表中读进来的数据
+	wg         sync.WaitGroup    //用来确定是不是关闭了
+	threadgo   *threads.ThreadGo //子协程管理
+	getnum     int64             //收到的总消息数
+	sendnum    int64             //当前在处理的消息数
 
 	wsmap     map[*websocket.Conn]bool //所有的连接
 	wsmaplock sync.Mutex               //上面那个对象的锁
@@ -57,6 +59,7 @@ func NewWSModule(configmd *WebSocketConfig) *WebSocketModule {
 		Addr: configmd.Addr,
 	}
 	result.wsmap = make(map[*websocket.Conn]bool)
+	result.threadgo = threads.NewThreadGo()
 	// result.wslist = make(map[uint]*WsConnModel)
 	// result.wsclosefunlist = make(map[*websocket.Conn]func())
 	return result
@@ -84,7 +87,7 @@ func (mod *WebSocketModule) Init() {
 func (mod *WebSocketModule) Start() {
 
 	//启动的协程
-	go func() {
+	mod.threadgo.Go(func(ctx context.Context) {
 		mod.wg.Add(1)
 		defer mod.wg.Done()
 		Logger.PStatus("websocket Module Start!")
@@ -98,7 +101,7 @@ func (mod *WebSocketModule) Start() {
 				// log.Fatal("Server closed unexpecteed!!")
 			}
 		}
-	}()
+	})
 }
 
 //Stop IModule 接口实现
@@ -106,13 +109,14 @@ func (mod *WebSocketModule) Stop() {
 	if err := mod.httpServer.Close(); err != nil {
 		Logger.PError(err, "Close websocket Module:")
 	}
-	mod.wsmaplock.Lock()
-	m := mod.wsmap
-	for k := range m {
-		k.Close()
-	}
-	mod.wsmaplock.Unlock()
-	mod.wg.Wait()
+	mod.threadgo.CloseWait()
+	// mod.wsmaplock.Lock()
+	// m := mod.wsmap
+	// for k := range m {
+	// 	k.Close()
+	// }
+	// mod.wsmaplock.Unlock()
+	// mod.wg.Wait()
 	Logger.PStatus("websocket Module Stop.")
 }
 
@@ -137,7 +141,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	defer conn.Close()
 
 	//用来管理连接下开的子协程
-	runobj := threads.NewThreadGo()
+	runobj := threads.NewThreadGoByGo(mod.threadgo)
 	request := make([]byte, 10240)
 	// msgbuff := make([]byte, 0, 20480)
 	//发给下面的连接对象，可以自定义一些信息和回调
@@ -160,13 +164,15 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	}()
 	Logger.PInfoKey("%s websocket client open!", wsconn.KeyID, wsname)
 	runchan := make(chan bool, 8) //用来处理超时
-	threads.GoTry(
-		func() {
+	mod.threadgo.Go(
+		func(ctx context.Context) {
 			timeout := time.NewTimer(time.Duration(mod.cg.Timeout) * time.Second)
+			defer timeout.Stop()
+			defer conn.Close()
 			for {
 				select {
+				case <-ctx.Done():
 				case <-timeout.C:
-					conn.Close()
 				case ok := <-runchan:
 					if ok {
 						timeout.Reset(time.Duration(mod.cg.Timeout) * time.Second)
@@ -177,9 +183,9 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 			}
 
 			//超时关连接
-		}, nil, nil)
-	threads.Try(
-		func() {
+		})
+	runobj.Try(
+		func(ctx context.Context) {
 		listen:
 			for {
 				readLen, err := conn.Read(request)
@@ -250,22 +256,6 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 func WebSocketHTMLHandlego(w http.ResponseWriter, req *http.Request) {
 	http.ServeFile(w, req, "web.html")
 }
-
-// //RegisterSocket 注册SOCKRT
-// func (mod *WebSocketModule) RegisterSocket(conn *websocket.Conn, hash uint, f func()) {
-// 	mod.wslock.Lock()
-// 	defer mod.wslock.Unlock()
-// 	mod.wslist[hash] = conn
-// 	mod.wsclosefunlist[conn] = f
-// }
-
-// //RemoveSocket 移除连接
-// func (mod *WebSocketModule) RemoveSocket(conn *websocket.Conn, hash uint) {
-// 	mod.wslock.Lock()
-// 	defer mod.wslock.Unlock()
-// 	delete(mod.wslist, hash)
-// 	delete(mod.wsclosefunlist, conn)
-// }
 
 func (mod *WebSocketModule) mapadd(conn *websocket.Conn) {
 	mod.wsmaplock.Lock()
