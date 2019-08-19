@@ -112,8 +112,10 @@ Fieldfor:
 	}
 	result.Append(" FROM ")
 	result.Append(tablename)
-	result.Append(" WHERE ")
-	result.Append(where.ToString())
+	if !where.IsEmpty() {
+		result.Append(" WHERE ")
+		result.Append(where.ToString())
+	}
 	result.Append(";")
 	return result.ToString()
 }
