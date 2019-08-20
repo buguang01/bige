@@ -172,7 +172,9 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 			for {
 				select {
 				case <-ctx.Done():
+					return
 				case <-timeout.C:
+					return
 				case ok := <-runchan:
 					if ok {
 						timeout.Reset(time.Duration(mod.cg.Timeout) * time.Second)
