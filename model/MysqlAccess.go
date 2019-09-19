@@ -30,6 +30,7 @@ type MysqlConfigModel struct {
 type MysqlAccess struct {
 	DBConobj *sql.DB           //数据库的连接池对象
 	cg       *MysqlConfigModel //配置信息
+	TimeZone string            //数据库时区
 }
 
 //NewMysqlAccess 新建一个数据库管理器
@@ -45,6 +46,13 @@ func NewMysqlAccess(cgmodel *MysqlConfigModel) *MysqlAccess {
 		Logger.PFatal(err)
 		panic(err)
 	}
+	row := result.GetDB().QueryRow("	SHOW VARIABLES LIKE 'time_zone';")
+	zone := ""
+	row.Scan(&zone, &zone)
+	if err != nil {
+		Logger.PFatal(err)
+	}
+	result.TimeZone = zone
 	Logger.PDebug("mysql init.")
 	return result
 }
