@@ -1,4 +1,4 @@
 package bige
 
 //VERSION
-const VERSION = "1.1.8"
+const VERSION = "1.1.9"
