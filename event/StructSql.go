@@ -80,11 +80,10 @@ func MarshalQsql(v interface{}, tablename string) (sql string) {
 	t := reflect.TypeOf(v)
 	farr := t.Elem()
 	where := util.NewStringBuilder()
+	iscol := false
 Fieldfor:
 	for i := 0; i < farr.NumField(); i++ {
-		if i > 0 {
-			result.Append(",")
-		}
+
 		field := farr.Field(i)
 		bigetag := field.Tag.Get("bige")
 		narr := strings.Split(bigetag, ",")
@@ -100,6 +99,11 @@ Fieldfor:
 			default:
 				name = v
 			}
+		}
+		if iscol {
+			result.Append(",")
+		} else {
+			iscol = true
 		}
 		result.Append(name)
 		if iswhere {
