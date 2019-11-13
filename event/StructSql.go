@@ -22,14 +22,16 @@ func DataGetByID(conndb *sql.DB, v IStructSql) *sql.Rows {
 
 //生成更新SQL
 func MarshalUpSql(v interface{}, tablename string) (sql string) {
-	result := util.NewStringBuilder()
+	t := reflect.TypeOf(v)
+	farr := t.Elem()
+	fieldnum := farr.NumField()
+	result := util.NewStringBuilderCap(fieldnum*40 + 60)
 	result.Append("INSERT INTO ")
 	result.Append(tablename)
 	result.Append("(")
-	t := reflect.TypeOf(v)
-	farr := t.Elem()
-	tmp := util.NewStringBuilder()
-	vtmp := util.NewStringBuilder()
+
+	tmp := util.NewStringBuilderCap(fieldnum * 10)
+	vtmp := util.NewStringBuilderCap(fieldnum * 20)
 Fieldfor:
 	for i := 0; i < farr.NumField(); i++ {
 		field := farr.Field(i)
@@ -74,12 +76,12 @@ Fieldfor:
 
 //生成查询SQL
 func MarshalQsql(v interface{}, tablename string) (sql string) {
-	result := util.NewStringBuilder()
-	result.Append("SELECT ")
-
 	t := reflect.TypeOf(v)
 	farr := t.Elem()
-	where := util.NewStringBuilder()
+	result := util.NewStringBuilderCap(farr.NumField()*30 + 30)
+	result.Append("SELECT ")
+
+	where := util.NewStringBuilderCap(30)
 	iscol := false
 Fieldfor:
 	for i := 0; i < farr.NumField(); i++ {
