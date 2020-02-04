@@ -11,3 +11,5 @@ type IModule interface {
 	//PrintStatus 打印状态
 	PrintStatus() string
 }
+
+type options func(mod IModule)

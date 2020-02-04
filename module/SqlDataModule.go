@@ -9,7 +9,7 @@ import (
 
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/event"
-	"github.com/buguang01/bige/threads"
+	"github.com/buguang01/util/threads"
 	"github.com/buguang01/util"
 )
 

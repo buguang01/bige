@@ -1,6 +1,7 @@
 package module
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -9,8 +10,7 @@ import (
 
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/event"
-	"github.com/buguang01/bige/json"
-	"github.com/buguang01/bige/threads"
+	"github.com/buguang01/util/threads"
 )
 
 //HTTPConfig httpmodule的配置
@@ -22,14 +22,12 @@ type HTTPConfig struct {
 //HTTPModule ...
 //http连接模块
 type HTTPModule struct {
-	HTTPAddr   string         //HTTP监听的地址
-	httpServer *http.Server   //HTTP请求的对象
-	cg         *HTTPConfig    //从配置表中读进来的数据
-	wg         sync.WaitGroup //用来确定是不是关闭了
-	getnum     int64          //收到的总消息数
-	runing     int64          //当前在处理的消息数
-	// failnum    int64          //发生问题的消息数
-
+	HTTPAddr   string                                                //HTTP监听的地址
+	httpServer *http.Server                                          //HTTP请求的对象
+	cg         *HTTPConfig                                           //从配置表中读进来的数据
+	wg         sync.WaitGroup                                        //用来确定是不是关闭了
+	getnum     int64                                                 //收到的总消息数
+	runing     int64                                                 //当前在处理的消息数
 	RouteFun   func(code int) event.HTTPcall                         //用来生成事件处理器的工厂
 	TimeoutFun event.HTTPcall                                        //超时时的回调方法
 	GetIPFun   func(w http.ResponseWriter, req *http.Request) string //拿IP的方法

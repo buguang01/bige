@@ -11,8 +11,8 @@ import (
 
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/event"
-	"github.com/buguang01/bige/json"
-	"github.com/buguang01/bige/threads"
+	"encoding/json"
+	"github.com/buguang01/util/threads"
 
 	"golang.org/x/net/websocket"
 )
