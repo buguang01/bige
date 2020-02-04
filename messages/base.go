@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/buguang01/bige/event"
-	"github.com/buguang01/util/threads"
 )
 
 //消息收发接口
@@ -34,7 +33,7 @@ type IHttpMessageHandle interface {
 
 type IWebSocketMessageHandle interface {
 	//ws的回调
-	WebSocketDirectCall(ws *event.WebSocketModel, runobj *threads.ThreadGo)
+	WebSocketDirectCall(ws *event.WebSocketModel)
 }
 
 type INsqMessageHandle interface {

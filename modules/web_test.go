@@ -1,35 +1,36 @@
-package module_test
+package modules_test
 
 import (
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/buguang01/bige/modules"
+
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/event"
 	"github.com/buguang01/bige/messages"
-	"github.com/buguang01/bige/module"
 )
 
 var (
-	WebModuleEx *module.WebModule
+	WebmodulesEx *modules.WebModule
 )
 
 func TestWeb(t *testing.T) {
 	Logger.Init(0, "logs", Logger.LogModeFmt)
-	WebModuleEx := module.NewWebModule()
-	WebModuleEx.RouteHandle = messages.HttpJsonMessageHandleNew()
+	WebmodulesEx := modules.NewWebModule()
+	WebmodulesEx.RouteHandle = messages.HttpJsonMessageHandleNew()
 	action := Msgone{}.GetAction()
-	WebModuleEx.RouteHandle.SetRoute(action, &Msgone{})
+	WebmodulesEx.RouteHandle.SetRoute(action, &Msgone{})
 
 	// m.TimeoutFun = TimeoutCallback //设置超时
 
-	WebModuleEx.Init()
+	WebmodulesEx.Init()
 
-	WebModuleEx.Start()
+	WebmodulesEx.Start()
 
 	time.Sleep(600 * time.Second)
-	WebModuleEx.Stop()
+	WebmodulesEx.Stop()
 
 	Logger.LogClose()
 }
