@@ -126,10 +126,10 @@ func (mod *WebModule) Handle(w http.ResponseWriter, req *http.Request) {
 	}
 	webmsg, ok := msg.(messages.IHttpMessageHandle)
 	if !ok {
-		Logger.PInfo("Not is Web Msg:%v", msg)
+		Logger.PInfo("Not is Web Msg:%+v", msg)
 		return
 	} else {
-		Logger.PInfo("Web Get Msg:%v", msg)
+		Logger.PInfo("Web Get Msg:%+v", msg)
 	}
 
 	threads.Try(
@@ -146,7 +146,7 @@ func (mod *WebModule) Handle(w http.ResponseWriter, req *http.Request) {
 				break
 			case <-timeout.C:
 				//上面那个可能还没有运行完，但是超时了要返回了
-				Logger.PDebug("web timeout msg:%v", webmsg)
+				Logger.PDebug("web timeout msg:%+v", webmsg)
 				if mod.timeoutFun != nil {
 					mod.timeoutFun(webmsg, w, req)
 				}
