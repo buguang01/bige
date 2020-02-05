@@ -1,5 +1,7 @@
 package modules
 
+import "runtime"
+
 //IModule 模块接口
 type IModule interface {
 	//Init 初始化
@@ -13,3 +15,7 @@ type IModule interface {
 }
 
 type options func(mod IModule)
+
+var (
+	moduleCap = runtime.NumCPU() * 10
+)

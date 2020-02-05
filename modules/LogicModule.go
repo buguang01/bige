@@ -3,7 +3,6 @@ package modules
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"sync/atomic"
 	"time"
 
@@ -30,8 +29,8 @@ func NewLogicModule(opts ...options) *LogicModule {
 	result := &LogicModule{
 		chanNum:   1024,
 		timeout:   60 * time.Second,
-		logicList: make(map[int]*logicThread, runtime.NumCPU()*10),
-		keyList:   make([]int, 0, runtime.NumCPU()*10),
+		logicList: make(map[int]*logicThread, moduleCap),
+		keyList:   make([]int, 0, moduleCap),
 		getNum:    0,
 		endNum:    0,
 		runing:    0,
@@ -132,7 +131,7 @@ func (mod *LogicModule) Hander(ctx context.Context) {
 type logicThread struct {
 	LogicThreadID int                         //协程key
 	chanLogic     chan messages.ILogicMessage //要处理的逻辑
-	UpTime        time.Time                   //更新时间
+	upTime        time.Time                   //更新时间
 	cancel        context.CancelFunc          //关闭
 }
 
@@ -140,7 +139,7 @@ func newLogicThread(id, channum int) *logicThread {
 	result := &logicThread{
 		LogicThreadID: id,
 		chanLogic:     make(chan messages.ILogicMessage, channum),
-		UpTime:        util.GetCurrTime(),
+		upTime:        util.GetCurrTime(),
 	}
 	return result
 }
@@ -178,7 +177,7 @@ trheadhandle:
 }
 
 func (lth *logicThread) addMsg(msg messages.ILogicMessage) {
-	lth.UpTime = util.GetCurrTime()
+	lth.upTime = util.GetCurrTime()
 	lth.chanLogic <- msg
 }
 
