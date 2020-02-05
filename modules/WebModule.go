@@ -124,7 +124,7 @@ func (mod *WebModule) Handle(w http.ResponseWriter, req *http.Request) {
 		Logger.PInfo("RouteHandle Unmarshal Error:%s", err.Error())
 		return
 	}
-	webmsg, ok := msg.(messages.IHttpMessageHandle)
+	modmsg, ok := msg.(messages.IHttpMessageHandle)
 	if !ok {
 		Logger.PInfo("Not is Web Msg:%+v", msg)
 		return
@@ -136,7 +136,7 @@ func (mod *WebModule) Handle(w http.ResponseWriter, req *http.Request) {
 		func() {
 			g := threads.NewGoRun(
 				func() {
-					webmsg.HttpDirectCall(w, req)
+					modmsg.HttpDirectCall(w, req)
 				},
 				nil)
 			select {
@@ -146,9 +146,9 @@ func (mod *WebModule) Handle(w http.ResponseWriter, req *http.Request) {
 				break
 			case <-timeout.C:
 				//上面那个可能还没有运行完，但是超时了要返回了
-				Logger.PDebug("web timeout msg:%+v", webmsg)
+				Logger.PDebug("web timeout msg:%+v", modmsg)
 				if mod.timeoutFun != nil {
-					mod.timeoutFun(webmsg, w, req)
+					mod.timeoutFun(modmsg, w, req)
 				}
 				break
 			}

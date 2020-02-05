@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/buguang01/Logger"
-	"github.com/buguang01/bige/event"
 	"github.com/buguang01/bige/messages"
 	"github.com/buguang01/util/threads"
 	"golang.org/x/net/websocket"
@@ -31,22 +30,22 @@ func WebSocketSetTimeout(timeout time.Duration) options {
 }
 
 //连接成功后回调，可以用来获取一些连接的信息，比如IP
-func WebScoketSetOnlineFun(fun func(conn *event.WebSocketModel)) options {
+func WebScoketSetOnlineFun(fun func(conn *messages.WebSocketModel)) options {
 	return func(mod IModule) {
 		mod.(*WebSocketModule).webSocketOnlineFun = fun
 	}
 }
 
 type WebSocketModule struct {
-	ipPort             string                           //HTTP监听的地址
-	timeout            time.Duration                    //超时时间
-	RouteHandle        messages.IMessageHandle          //消息路由
-	webSocketOnlineFun func(conn *event.WebSocketModel) //连接成功后回调，可以用来获取一些连接的信息，比如IP
-	getnum             int64                            //收到的总消息数
-	runing             int64                            //当前在处理的消息数
-	connlen            int64                            //连接数
-	httpServer         *http.Server                     //HTTP请求的对象
-	thgo               *threads.ThreadGo                //协程管理器
+	ipPort             string                              //HTTP监听的地址
+	timeout            time.Duration                       //超时时间
+	RouteHandle        messages.IMessageHandle             //消息路由
+	webSocketOnlineFun func(conn *messages.WebSocketModel) //连接成功后回调，可以用来获取一些连接的信息，比如IP
+	getnum             int64                               //收到的总消息数
+	runing             int64                               //当前在处理的消息数
+	connlen            int64                               //连接数
+	httpServer         *http.Server                        //HTTP请求的对象
+	thgo               *threads.ThreadGo                   //协程管理器
 }
 
 func NewWebSocketModule(opts ...options) *WebSocketModule {
@@ -127,7 +126,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 	defer conn.Close()
 
 	//发给下面的连接对象，可以自定义一些信息和回调
-	wsconn := new(event.WebSocketModel)
+	wsconn := new(messages.WebSocketModel)
 	wsconn.Conn = conn
 	wsconn.KeyID = -1
 	if mod.webSocketOnlineFun != nil {
