@@ -1,11 +1,13 @@
 package modules_test
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/buguang01/bige/modules"
+	"github.com/buguang01/util/threads"
 
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/event"
@@ -17,6 +19,7 @@ var (
 )
 
 func TestWeb(t *testing.T) {
+
 	Logger.Init(0, "logs", Logger.LogModeFmt)
 	WebmodulesEx := modules.NewWebModule()
 	WebmodulesEx.RouteHandle = messages.HttpJsonMessageHandleNew()
@@ -49,4 +52,19 @@ func (msg *Msgone) HttpDirectCall(w http.ResponseWriter, req *http.Request) {
 	jsuser["Name"] = msg.UserName
 	jsuser["ACTION"] = int(msg.GetAction())
 	event.HTTPReplyMsg(w, jsuser, 0, jsuser)
+}
+
+func TestCtx(t *testing.T) {
+	thgo := threads.NewThreadGo()
+	thgo.CloseWait()
+	for {
+		select {
+		case <-thgo.Ctx.Done():
+			fmt.Println("ctx")
+		default:
+			fmt.Println("def")
+		}
+		time.Sleep(time.Second)
+	}
+
 }

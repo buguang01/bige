@@ -2,6 +2,7 @@ package messages
 
 import (
 	"net/http"
+	"runtime"
 
 	"golang.org/x/net/websocket"
 )
@@ -64,14 +65,14 @@ type INsqdResultMessage interface {
 
 //nsqd消息的基础结构
 type NsqdMessage struct {
-	SendID   int    //发信息用户ID
-	SendSID  string //发信息服务器（回复用的信息）
-	ActionID uint32 //消息号
-	Topic    string //目标
+	SendUserID int    //发信息用户ID
+	SendSID    string //发信息服务器（回复用的信息）
+	ActionID   uint32 //消息号
+	Topic      string //目标
 }
 
 func (msg *NsqdMessage) GetSendUserID() int {
-	return msg.SendID
+	return msg.SendUserID
 }
 func (msg *NsqdMessage) GetSendSID() string {
 	return msg.SendSID
@@ -84,4 +85,23 @@ func (msg *NsqdMessage) GetActionID() uint32 {
 }
 func (msg *NsqdMessage) GetTopic() string {
 	return msg.Topic
+}
+
+//LogicMessage 逻辑委托
+type ILogicMessage interface {
+	//所在协程的KEY
+	TheardID() int
+	//调用方法
+	MessageHandle()
+}
+
+type LogicMessage struct {
+	UserID int
+}
+
+func (msg *LogicMessage) TheardID() int {
+	//默认按CPU个数的十倍的协程数来分配对应的协程进行处理
+	//分配时，按用户ID进行取余
+	cpu := runtime.NumCPU() * 10
+	return msg.UserID % cpu
 }

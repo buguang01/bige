@@ -24,6 +24,7 @@ type NsqdModule struct {
 	sendList           chan messages.INsqdResultMessage //发出去的消息
 	getnum             int64                            //收到的总消息数
 	sendnum            int64                            //发出去的消息
+	tmpnum             int64                            //临时计数
 	consumer           *nsq.Consumer                    //消费者
 	producer           *nsq.Producer                    //生产者
 	thgo               *threads.ThreadGo                //子协程管理
@@ -40,6 +41,7 @@ func NewNsqdModule(opts ...options) *NsqdModule {
 		RouteHandle:        messages.JsonMessageHandleNew(),
 		getnum:             0,
 		sendnum:            0,
+		tmpnum:             0,
 		thgo:               threads.NewThreadGo(),
 	}
 
@@ -105,43 +107,21 @@ func (mod *NsqdModule) Handle(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			{
-				//要保证所有消息都发出去了。放在消息队列里就可以了
-				//因为之前的逻辑可能已做了。
-				for {
-					select {
-					case msg := <-mod.sendList:
-						{
-							msg.SetSendSID(mod.ServerID)
-							topic := msg.GetTopic()
-							buf, _ := mod.RouteHandle.Marshal(msg.GetAction(), msg)
-							if err := mod.producer.Publish(topic, buf); err != nil {
-								for mod.PingNsq(ctx) == true {
-									if err := mod.producer.Publish(topic, buf); err != nil {
-										Logger.PFatal(err)
-										continue
-									} else {
-										break
-									}
-								}
-							}
-						}
-					default:
-						{
-							return
-						}
-					}
+				/*
+					当关闭服务的时候，
+					如果有协程进入了发消息的逻辑里就先等一下
+				*/
+				if atomic.LoadInt64(&mod.tmpnum) == 0 {
+					return
 				}
 			}
-		case msg, ok := <-mod.sendList:
+		case msg := <-mod.sendList:
 			{
-				if !ok {
-					break
-				}
+				atomic.AddInt64(&mod.tmpnum, -1)
 				if msg.GetTopic() == mod.ServerID {
 					atomic.AddInt64(&mod.sendnum, 1)
 					//是发给自己服务器的
 					mod.thgo.Try(func(ctx context.Context) {
-
 						modmsg, ok := msg.(messages.INsqMessageHandle)
 						if !ok {
 							Logger.PInfo("Nsqd Send Self Not is Nsqd Msg:%+v", msg)
@@ -177,6 +157,43 @@ func (mod *NsqdModule) Handle(ctx context.Context) {
 	}
 }
 
+//AddMsg 发送消息出去
+func (mod *NsqdModule) AddMsg(msg messages.INsqdResultMessage) bool {
+	msg.SetSendSID(mod.ServerID)
+	atomic.AddInt64(&mod.tmpnum, 1)
+	select {
+	case <-mod.thgo.Ctx.Done():
+		atomic.AddInt64(&mod.tmpnum, -1)
+		return false
+	default:
+		mod.sendList <- msg
+		return true
+	}
+}
+
+//AddMsgSync 同步发消息出去
+func (mod *NsqdModule) AddMsgSync(msg messages.INsqdResultMessage) error {
+	atomic.AddInt64(&mod.tmpnum, 1)
+	defer func() {
+		atomic.AddInt64(&mod.tmpnum, -1)
+	}()
+	select {
+	case <-mod.thgo.Ctx.Done():
+		return errors.New("ctx done")
+	default:
+		msg.SetSendSID(mod.ServerID)
+		topic := msg.GetTopic()
+		buf, _ := mod.RouteHandle.Marshal(msg.GetAction(), msg)
+
+		if err := mod.producer.Publish(topic, buf); err != nil {
+			return err
+		}
+		atomic.AddInt64(&mod.sendnum, 1)
+
+	}
+	return nil
+}
+
 //nsq.Handler的接口
 //收nsqd的消息
 func (mod *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
@@ -207,43 +224,6 @@ func (mod *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 	}, nil, nil)
 	return nil
 	//看了源码，如果返回错误，会重新发过来，看nsq的配置
-}
-
-//AddMsg 发送消息出去
-func (mod *NsqdModule) AddMsg(msg messages.INsqdResultMessage) bool {
-	msg.SetSendSID(mod.ServerID)
-	select {
-	case <-mod.thgo.Ctx.Done():
-		return false
-	default:
-		mod.sendList <- msg
-		return true
-	}
-}
-
-//AddMsgSync 同步发消息出去
-func (mod *NsqdModule) AddMsgSync(msg messages.INsqdResultMessage) error {
-	select {
-	case <-mod.thgo.Ctx.Done():
-		return errors.New("ctx done")
-	default:
-		msg.SetSendSID(mod.ServerID)
-		topic := msg.GetTopic()
-		buf, _ := mod.RouteHandle.Marshal(msg.GetAction(), msg)
-
-		if err := mod.producer.Publish(topic, buf); err != nil {
-			return err
-		}
-		atomic.AddInt64(&mod.sendnum, 1)
-
-	}
-	return nil
-}
-
-//StopConsumer如果要关服，需要提前关闭收消息
-func (mod *NsqdModule) StopConsumer() {
-	mod.consumer.Stop()
-	<-mod.consumer.StopChan
 }
 
 func (mod *NsqdModule) registerTopic() {
