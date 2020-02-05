@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"runtime"
 
+	"github.com/buguang01/bige/model"
 	"golang.org/x/net/websocket"
 )
 
@@ -90,7 +91,7 @@ func (msg *NsqdMessage) GetTopic() string {
 //LogicMessage 逻辑委托
 type ILogicMessage interface {
 	//所在协程的KEY
-	TheardID() int
+	LogicThreadID() int
 	//调用方法
 	MessageHandle()
 }
@@ -99,9 +100,23 @@ type LogicMessage struct {
 	UserID int
 }
 
-func (msg *LogicMessage) TheardID() int {
+func (msg *LogicMessage) LogicThreadID() int {
 	//默认按CPU个数的十倍的协程数来分配对应的协程进行处理
 	//分配时，按用户ID进行取余
 	cpu := runtime.NumCPU() * 10
 	return msg.UserID % cpu
+}
+
+//DataBase的处理接口
+type IDataBaseMessage interface {
+	//所在DB协程
+	DBThreadID() int
+	/*数据表,如果你的表放入时，不是马上保存的，那么后续可以用这个KEY来进行覆盖，
+	这样就可以实现多次修改一次保存的功能
+	所以这个字段建议是：用户ID+数据表名+数据主键
+	*/
+	GetDataKey() string
+
+	//调用方法
+	SaveDB(conn model.IConnDB) error
 }
