@@ -3,6 +3,7 @@ package modules_test
 import (
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -67,4 +68,16 @@ func TestCtx(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
+}
+
+func TestAddInt(t *testing.T) {
+	var i int64 = 0
+	addint(&i)
+	fmt.Println(i)
+}
+
+func addint(i *int64) {
+	atomic.AddInt64(i, 1)
+	defer atomic.AddInt64(i, 10)
+	atomic.AddInt64(i, 100)
 }

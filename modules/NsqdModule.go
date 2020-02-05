@@ -174,9 +174,7 @@ func (mod *NsqdModule) AddMsg(msg messages.INsqdResultMessage) bool {
 //AddMsgSync 同步发消息出去
 func (mod *NsqdModule) AddMsgSync(msg messages.INsqdResultMessage) error {
 	atomic.AddInt64(&mod.tmpnum, 1)
-	defer func() {
-		atomic.AddInt64(&mod.tmpnum, -1)
-	}()
+	defer atomic.AddInt64(&mod.tmpnum, -1)
 	select {
 	case <-mod.thgo.Ctx.Done():
 		return errors.New("ctx done")
