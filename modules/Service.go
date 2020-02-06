@@ -82,6 +82,8 @@ Pstatus:
 				ps += md.PrintStatus()
 			}
 			Logger.PStatus(ps)
+			break Pstatus
+
 		}
 	}
 	gs.isrun = false

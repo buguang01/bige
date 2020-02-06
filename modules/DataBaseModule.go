@@ -67,7 +67,7 @@ func (mod *DataBaseModule) PrintStatus() string {
 	return fmt.Sprintf(
 		"\r\n\t\tDataBase Module\t:%d/%d/%d\t(logic/get/save)",
 		len(mod.logicList),
-		atomic.LoadInt64(&this.getnum),
+		atomic.LoadInt64(&mod.getNum),
 		atomic.LoadInt64(&mod.saveNum))
 }
 
@@ -84,6 +84,7 @@ func (mod *DataBaseModule) Handle(ctx context.Context) {
 					for _, lth := range mod.logicList {
 						lth.stop()
 					}
+					return
 				}
 				if len(msgs) == 0 {
 					continue
@@ -104,7 +105,7 @@ func (mod *DataBaseModule) Handle(ctx context.Context) {
 			{
 				lilen := len(mod.keyList)
 				if lilen == 0 {
-					break
+					continue
 				}
 				loop = loop % lilen
 				keyid := mod.keyList[loop]

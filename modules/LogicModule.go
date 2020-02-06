@@ -93,8 +93,11 @@ func (mod *LogicModule) Hander(ctx context.Context) {
 					return
 				}
 			}
-		case msg := <-mod.chanLogic:
+		case msg, ok := <-mod.chanLogic:
 			{
+				if !ok {
+					continue
+				}
 				lth, ok := mod.logicList[msg.LogicThreadID()]
 				if !ok {
 					//新开一个协程

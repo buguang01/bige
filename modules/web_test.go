@@ -71,11 +71,20 @@ func TestCtx(t *testing.T) {
 }
 
 func TestAddInt(t *testing.T) {
-	tk := time.NewTimer(time.Second)
+	ch := make(chan int, 8)
+	ch <- 1
+	ch <- 2
+	ch <- 3
+	close(ch)
+	tk := time.NewTimer(time.Second * 10)
 	for {
 		select {
+		case <-ch:
+			fmt.Println("tk.c then")
+			time.Sleep(time.Second)
 		case <-tk.C:
-			fmt.Println("tk.c")
+			fmt.Println("tk.c ")
+			time.Sleep(time.Second)
 
 		}
 	}
