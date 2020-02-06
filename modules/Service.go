@@ -82,7 +82,7 @@ Pstatus:
 				ps += md.PrintStatus()
 			}
 			Logger.PStatus(ps)
-			break Pstatus
+			// break Pstatus
 
 		}
 	}
