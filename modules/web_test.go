@@ -71,6 +71,15 @@ func TestCtx(t *testing.T) {
 }
 
 func TestAddInt(t *testing.T) {
+	tk := time.NewTimer(time.Second)
+	for {
+		select {
+		case <-tk.C:
+			fmt.Println("tk.c")
+
+		}
+	}
+
 	var i int64 = 0
 	addint(&i)
 	fmt.Println(i)

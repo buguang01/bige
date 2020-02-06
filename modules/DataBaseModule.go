@@ -15,6 +15,7 @@ import (
 )
 
 type DataBaseModule struct {
+	conndb    *sql.DB                          //数据库连接对象
 	chanNum   int                              //通道缓存空间
 	timeout   time.Duration                    //超时时间
 	logicList map[int]*dataBaseThread          //子逻辑列表
@@ -25,8 +26,9 @@ type DataBaseModule struct {
 	thgo      *threads.ThreadGo                //子协程管理器
 }
 
-func NewDataBaseModule(opts ...options) *DataBaseModule {
+func NewDataBaseModule(conndb *sql.DB, opts ...options) *DataBaseModule {
 	result := &DataBaseModule{
+		conndb:    conndb,
 		chanNum:   1024,
 		timeout:   2 * time.Minute,
 		logicList: make(map[int]*dataBaseThread, moduleCap),
@@ -45,7 +47,7 @@ func (mod *DataBaseModule) Init() {
 
 //Start 启动
 func (mod *DataBaseModule) Start() {
-	mod.thgo.Go(mod.Hander)
+	mod.thgo.Go(mod.Handle)
 	Logger.PStatus("DataBase Module Start!")
 }
 
@@ -67,6 +69,7 @@ func (mod *DataBaseModule) PrintStatus() string {
 
 func (mod *DataBaseModule) Handle(ctx context.Context) {
 	tk := time.NewTicker(1 * time.Second)
+	defer tk.Stop()
 	loop := 0
 	for {
 		select {
@@ -74,7 +77,9 @@ func (mod *DataBaseModule) Handle(ctx context.Context) {
 			{
 				if !ok {
 					//通道如果被关闭了，就可以关闭子协程了
-
+					for _, lth := range mod.logicList {
+						lth.stop()
+					}
 				}
 				if len(msgs) == 0 {
 					continue
@@ -86,7 +91,7 @@ func (mod *DataBaseModule) Handle(ctx context.Context) {
 				lth, ok := mod.logicList[upmd.DBThreadID()]
 				if !ok {
 					//新开一个协程
-					lth = newDataThread(upmd.DBThreadID(), mod.conndb, mod.chanNum)
+					lth = newDataBaseThread(upmd.DBThreadID(), mod.chanNum, mod.conndb)
 					mod.logicList[lth.DBThreadID] = lth
 					mod.keyList = append(mod.keyList, lth.DBThreadID)
 					lth.start(mod)
@@ -103,9 +108,11 @@ func (mod *DataBaseModule) Handle(ctx context.Context) {
 				keyid := mod.keyList[loop]
 				if lth, ok := mod.logicList[keyid]; ok {
 					if lth.GetMsgNum() == 0 &&
-						util.GetCurrTime().Sub(lth.UpTime) > mod.timeout {
+						util.GetCurrTime().Sub(lth.upTime) > mod.timeout {
 						//确定子协程可以关闭
 						lth.stop()
+						delete(mod.logicList, keyid)
+						mod.keyList = append(mod.keyList[:loop], mod.keyList[loop+1:]...)
 					}
 				}
 				loop++
@@ -125,6 +132,7 @@ type dataBaseThread struct {
 	chanList   chan []messages.IDataBaseMessage     //收要更新的数据
 	Conndb     *sql.DB                              //数据库连接对象
 	upTime     time.Time                            //更新时间
+	cancel     context.CancelFunc                   //关闭
 }
 
 func newDataBaseThread(id, channum int, conn *sql.DB) *dataBaseThread {
@@ -151,16 +159,37 @@ func (lth *dataBaseThread) stop() {
 }
 
 func (lth *dataBaseThread) handle(ctx context.Context, mod *DataBaseModule) {
-
+	tk := time.NewTimer(time.Second)
+	defer tk.Stop()
+	isruned := false
 trheadhandle:
 	for {
 		select {
 		case msg, ok := <-lth.chanList:
 			{
 				if !ok {
+					lth.save()
 					break trheadhandle
 				}
+				if len(msg) == 0 {
+					continue
+				}
+				for _, data := range msg {
+					lth.upDataList[data.GetDataKey()] = data
+				}
+				if isruned {
+					tk.Reset(time.Second)
+					isruned = false
+				}
 
+			}
+		case <-tk.C:
+			{
+				if len(lth.upDataList) > 0 {
+					lth.save()
+					lth.upDataList = make(map[string]messages.IDataBaseMessage)
+				}
+				isruned = true
 			}
 		}
 	}
@@ -175,7 +204,7 @@ func (lth *dataBaseThread) save() {
 	if tx, err := lth.Conndb.Begin(); err == nil {
 		threads.Try(func() {
 			for _, data := range lth.upDataList {
-				if err = data.UpDataSave(tx); err != nil {
+				if err = data.SaveDB(tx); err != nil {
 					panic(errors.New(fmt.Sprintf(" keyid:%d;DataKey:%s; ", data.DBThreadID(), data.GetDataKey())))
 				}
 			}
@@ -189,5 +218,5 @@ func (lth *dataBaseThread) save() {
 
 //还有多少消息没有处理完
 func (lth *dataBaseThread) GetMsgNum() int {
-	return len(lth.chanList)
+	return len(lth.chanList) + len(lth.upDataList)
 }

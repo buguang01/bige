@@ -116,9 +116,11 @@ func (mod *LogicModule) Hander(ctx context.Context) {
 				keyid := mod.keyList[loop]
 				if lth, ok := mod.logicList[keyid]; ok {
 					if lth.GetMsgNum() == 0 &&
-						util.GetCurrTime().Sub(lth.UpTime) > mod.timeout {
+						util.GetCurrTime().Sub(lth.upTime) > mod.timeout {
 						//确定子协程可以关闭
 						lth.stop()
+						delete(mod.logicList, keyid)
+						mod.keyList = append(mod.keyList[:loop], mod.keyList[loop+1:]...)
 					}
 				}
 				loop++
