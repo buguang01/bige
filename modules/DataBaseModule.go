@@ -22,7 +22,7 @@ type DataBaseModule struct {
 	keyList   []int                            //key列表，用来间隔遍历
 	chanList  chan []messages.IDataBaseMessage //消息信道
 	getNum    int64                            //收到的总消息数
-	endNum    int64                            //处理结束数
+	saveNum   int64                            //保存次数
 	thgo      *threads.ThreadGo                //子协程管理器
 }
 
@@ -34,7 +34,7 @@ func NewDataBaseModule(conndb *sql.DB, opts ...options) *DataBaseModule {
 		logicList: make(map[int]*dataBaseThread, moduleCap),
 		keyList:   make([]int, 0, moduleCap),
 		getNum:    0,
-		endNum:    0,
+		saveNum:   0,
 		thgo:      threads.NewThreadGo(),
 	}
 	return result
@@ -64,7 +64,11 @@ func (mod *DataBaseModule) Stop() {
 
 //PrintStatus 打印状态
 func (mod *DataBaseModule) PrintStatus() string {
-	return ""
+	return fmt.Sprintf(
+		"\r\n\t\tDataBase Module\t:%d/%d/%d\t(logic/get/save)",
+		len(mod.logicList),
+		atomic.LoadInt64(&this.getnum),
+		atomic.LoadInt64(&mod.saveNum))
 }
 
 func (mod *DataBaseModule) Handle(ctx context.Context) {
@@ -84,8 +88,6 @@ func (mod *DataBaseModule) Handle(ctx context.Context) {
 				if len(msgs) == 0 {
 					continue
 				}
-				atomic.AddInt64(&mod.getNum, 1)
-
 				upmd := msgs[0]
 
 				lth, ok := mod.logicList[upmd.DBThreadID()]
@@ -169,6 +171,7 @@ trheadhandle:
 			{
 				if !ok {
 					lth.save()
+					atomic.AddInt64(&mod.saveNum, 1)
 					break trheadhandle
 				}
 				if len(msg) == 0 {
@@ -187,6 +190,7 @@ trheadhandle:
 			{
 				if len(lth.upDataList) > 0 {
 					lth.save()
+					atomic.AddInt64(&mod.saveNum, 1)
 					lth.upDataList = make(map[string]messages.IDataBaseMessage)
 				}
 				isruned = true

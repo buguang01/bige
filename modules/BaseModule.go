@@ -17,5 +17,6 @@ type IModule interface {
 type options func(mod IModule)
 
 var (
+	//用来设置默认协程数
 	moduleCap = runtime.NumCPU() * 10
 )
