@@ -88,8 +88,8 @@ func (msghandle *JsonMessageHandle) GetRoute(msgid uint32) (result interface{}, 
 func (msghandle *JsonMessageHandle) CheckMaxLenVaild(buff []byte) (msglen uint32, ok bool) {
 	pklen := binary.BigEndian.Uint32(buff[:4])
 	pklen = pklen ^ msghandle.msgHead
-	if pklen > msghandle.msgMaxLen {
-		return -1, false
+	if pklen > uint32(msghandle.msgMaxLen) {
+		return 0, false
 	}
 	if pklen > uint32(len(buff)) {
 		return pklen, false

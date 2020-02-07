@@ -133,7 +133,7 @@ func (mod *SocketModule) handle(conn net.Conn) {
 				buff = buf.Bytes()
 				msglen, ok := mod.RouteHandle.CheckMaxLenVaild(buff)
 				if !ok {
-					if msglen == -1 {
+					if msglen == 0 {
 						//消息长度异常
 						break listen
 					}
@@ -153,7 +153,7 @@ func (mod *SocketModule) handle(conn net.Conn) {
 					Logger.PInfo("socket Get Msg:%+v", msg)
 				}
 				buf.Reset()
-				if len(buff) > msglen {
+				if uint32(len(buff)) > msglen {
 					buf.Write(buff[msglen:])
 				}
 				runchan <- true
