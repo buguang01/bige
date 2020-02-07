@@ -13,6 +13,7 @@ require (
 	github.com/mreiferson/go-options v1.0.0 // indirect
 	github.com/nsqio/go-nsq v1.0.7
 	github.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518 // indirect
+	go.starlark.net v0.0.0-20200203144150-6677ee5c7211 // indirect
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 	google.golang.org/appengine v1.6.1 // indirect
 )

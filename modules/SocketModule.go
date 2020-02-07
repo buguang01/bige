@@ -16,6 +16,27 @@ import (
 	"github.com/buguang01/Logger"
 )
 
+func SocketSetPort(ipport string) options {
+	return func(mod IModule) {
+		mod.(*SocketModule).ipPort = ipport
+	}
+}
+
+//超时时间（秒）
+//例：超时时间为10秒时，就传入10
+func SocketSetTimeout(timeout time.Duration) options {
+	return func(mod IModule) {
+		mod.(*SocketModule).timeout = timeout * time.Second
+	}
+}
+
+//设置路由
+func SocketSetRoute(route messages.IMessageHandle) options {
+	return func(mod IModule) {
+		mod.(*SocketModule).RouteHandle = route
+	}
+}
+
 type SocketModule struct {
 	ipPort          string                           //HTTP监听的地址
 	timeout         time.Duration                    //超时时间
@@ -26,6 +47,23 @@ type SocketModule struct {
 	connlen         int64                            //连接数
 	netList         net.Listener                     //监听对象
 	thgo            *threads.ThreadGo                //协程管理器
+}
+
+func NewSocketModule(opts ...options) *SocketModule {
+	result := &SocketModule{
+		ipPort:      ":8082",
+		timeout:     60 * time.Second,
+		RouteHandle: messages.JsonMessageHandleNew(),
+		getnum:      0,
+		runing:      0,
+		connlen:     0,
+		thgo:        threads.NewThreadGo(),
+	}
+
+	for _, opt := range opts {
+		opt(result)
+	}
+	return result
 }
 
 //Init 初始化
