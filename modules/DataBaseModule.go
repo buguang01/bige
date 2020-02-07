@@ -14,6 +14,19 @@ import (
 	"github.com/buguang01/util/threads"
 )
 
+func DataBaseSetChanNum(channum int) options {
+	return func(mod IModule) {
+		mod.(*DataBaseModule).chanNum = channum
+	}
+}
+
+//设置超时时间(秒）
+func DataBaseSetTimeout(timeout time.Duration) options {
+	return func(mod IModule) {
+		mod.(*DataBaseModule).timeout = timeout * time.Second
+	}
+}
+
 type DataBaseModule struct {
 	conndb    *sql.DB                          //数据库连接对象
 	chanNum   int                              //通道缓存空间

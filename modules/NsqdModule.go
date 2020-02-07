@@ -13,13 +13,70 @@ import (
 	"github.com/nsqio/go-nsq"
 )
 
+//设置NSQD地址
+func NsqdSetPorts(ports ...string) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).nsqdPorts = ports
+	}
+}
+
+//设置LOOKUP地址
+func NsqdSetLookup(ports ...string) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).lookupPorts = ports
+	}
+}
+
+//设置发消息出去的缓存大小
+func NsqdSetChanNum(channum int) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).chanNum = channum
+	}
+}
+
+//设置去lOOKup请求的最小时间间隔（秒）
+func NsqdSetPollInterval(t time.Duration) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).lookupPollInterval = t * time.Second
+	}
+}
+
+//设置最多可以连接多少个NSQD
+func NsqdSetMaxInFlight(v int) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).maxInFlight = v
+	}
+}
+
+//设置本服务器监听的主题
+func NsqdSetMyTopic(topic string) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).Topic = topic
+	}
+}
+
+//设置本服务器监听的通道名
+func NsqdSetMyChannelName(name string) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).ChannelName = name
+	}
+}
+
+//设置路由
+func NsqdSetRoute(route messages.IMessageHandle) options {
+	return func(mod IModule) {
+		mod.(*NsqdModule).RouteHandle = route
+	}
+}
+
 type NsqdModule struct {
 	nsqdPorts          []string                         //nsqd地址组
 	lookupPorts        []string                         //lookup地址组
 	chanNum            int                              //发消息出去的缓存大小
-	lookupPollInterval time.Duration                    //去请求lookup nsq节点信息的时间（秒）
+	lookupPollInterval time.Duration                    //去请求lookup nsq节点信息的时间
 	maxInFlight        int                              //可以同时访问的nsqd节点数
-	ServerID           string                           //服务器
+	Topic              string                           //本服务器监听的主题
+	ChannelName        string                           //本服务器监听的通道名
 	RouteHandle        messages.IMessageHandle          //消息路由
 	sendList           chan messages.INsqdResultMessage //发出去的消息
 	getnum             int64                            //收到的总消息数
@@ -37,7 +94,8 @@ func NewNsqdModule(opts ...options) *NsqdModule {
 		chanNum:            1024,
 		lookupPollInterval: 1 * time.Second,
 		maxInFlight:        1024,
-		ServerID:           "0",
+		Topic:              "0",
+		ChannelName:        "Chan_0",
 		RouteHandle:        messages.JsonMessageHandleNew(),
 		getnum:             0,
 		sendnum:            0,
@@ -62,8 +120,7 @@ func (mod *NsqdModule) Init() {
 	nsqcg := nsq.NewConfig()
 	nsqcg.LookupdPollInterval = mod.lookupPollInterval
 	nsqcg.MaxInFlight = mod.maxInFlight
-	mod.consumer, err = nsq.NewConsumer(mod.ServerID,
-		fmt.Sprintf("%s_channel", mod.ServerID), nsqcg)
+	mod.consumer, err = nsq.NewConsumer(mod.Topic, mod.ChannelName, nsqcg)
 	if err != nil {
 		panic(err)
 	}
@@ -118,7 +175,7 @@ func (mod *NsqdModule) Handle(ctx context.Context) {
 		case msg := <-mod.sendList:
 			{
 				atomic.AddInt64(&mod.tmpnum, -1)
-				if msg.GetTopic() == mod.ServerID {
+				if msg.GetTopic() == mod.Topic {
 					atomic.AddInt64(&mod.sendnum, 1)
 					//是发给自己服务器的
 					mod.thgo.Try(func(ctx context.Context) {
@@ -136,7 +193,7 @@ func (mod *NsqdModule) Handle(ctx context.Context) {
 					}, nil, nil)
 				} else {
 					//发给别的服务器的
-					msg.SetSendSID(mod.ServerID)
+					msg.SetSendSID(mod.Topic)
 					topic := msg.GetTopic()
 					buf, _ := mod.RouteHandle.Marshal(msg.GetAction(), msg)
 					if err := mod.producer.Publish(topic, buf); err != nil {
@@ -159,7 +216,7 @@ func (mod *NsqdModule) Handle(ctx context.Context) {
 
 //AddMsg 发送消息出去
 func (mod *NsqdModule) AddMsg(msg messages.INsqdResultMessage) bool {
-	msg.SetSendSID(mod.ServerID)
+	msg.SetSendSID(mod.Topic)
 	atomic.AddInt64(&mod.tmpnum, 1)
 	select {
 	case <-mod.thgo.Ctx.Done():
@@ -179,7 +236,7 @@ func (mod *NsqdModule) AddMsgSync(msg messages.INsqdResultMessage) error {
 	case <-mod.thgo.Ctx.Done():
 		return errors.New("ctx done")
 	default:
-		msg.SetSendSID(mod.ServerID)
+		msg.SetSendSID(mod.Topic)
 		topic := msg.GetTopic()
 		buf, _ := mod.RouteHandle.Marshal(msg.GetAction(), msg)
 
@@ -225,7 +282,7 @@ func (mod *NsqdModule) HandleMessage(message *nsq.Message) (err error) {
 }
 
 func (mod *NsqdModule) registerTopic() {
-	if err := mod.producer.Publish(mod.ServerID, []byte(" ")); err != nil {
+	if err := mod.producer.Publish(mod.Topic, []byte(" ")); err != nil {
 		panic(err)
 	}
 }

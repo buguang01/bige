@@ -14,24 +14,31 @@ import (
 )
 
 //设置Web地址
-func WebModuleSetIpPort(ipPort string) options {
+func WebSetIpPort(ipPort string) options {
 	return func(mod IModule) {
 		mod.(*WebModule).ipPort = ipPort
 	}
 }
 
 //设置超时时间（秒）
-func WebModuleSetTimeout(timeout time.Duration) options {
+func WebSetTimeout(timeout time.Duration) options {
 	return func(mod IModule) {
 		mod.(*WebModule).timeout = timeout * time.Second
 	}
 }
 
 //设置超时回调方法
-func WebModuleSetTimeoutFunc(timeoutfunc func(webmsg messages.IHttpMessageHandle,
+func WebSetTimeoutFunc(timeoutfunc func(webmsg messages.IHttpMessageHandle,
 	w http.ResponseWriter, req *http.Request)) options {
 	return func(mod IModule) {
 		mod.(*WebModule).timeoutFun = timeoutfunc
+	}
+}
+
+//设置路由
+func WebSetRoute(route messages.IMessageHandle) options {
+	return func(mod IModule) {
+		mod.(*WebModule).RouteHandle = route
 	}
 }
 

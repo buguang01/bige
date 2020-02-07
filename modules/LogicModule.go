@@ -13,6 +13,20 @@ import (
 	"github.com/buguang01/util/threads"
 )
 
+//设置通道缓存空间
+func LogicSetChanNum(channum int) options {
+	return func(mod IModule) {
+		mod.(*LogicModule).chanNum = channum
+	}
+}
+
+//设置超时时间(秒）
+func LogicSetTimeout(timeout time.Duration) options {
+	return func(mod IModule) {
+		mod.(*LogicModule).timeout = timeout * time.Second
+	}
+}
+
 type LogicModule struct {
 	chanNum   int                         //通道缓存空间
 	timeout   time.Duration               //超时时间

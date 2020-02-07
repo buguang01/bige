@@ -36,6 +36,13 @@ func WebScoketSetOnlineFun(fun func(conn *messages.WebSocketModel)) options {
 	}
 }
 
+//设置路由
+func WebSocketSetRoute(route messages.IMessageHandle) options {
+	return func(mod IModule) {
+		mod.(*WebSocketModule).RouteHandle = route
+	}
+}
+
 type WebSocketModule struct {
 	ipPort             string                              //HTTP监听的地址
 	timeout            time.Duration                       //超时时间
