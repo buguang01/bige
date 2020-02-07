@@ -1,6 +1,7 @@
 package messages
 
 import (
+	"net"
 	"net/http"
 	"runtime"
 
@@ -43,6 +44,18 @@ type WebSocketModel struct {
 type IWebSocketMessageHandle interface {
 	//ws的回调
 	WebSocketDirectCall(ws *WebSocketModel)
+}
+
+//SocketModel 用户连接对象
+type SocketModel struct {
+	net.Conn
+	CloseFun func(skmd *SocketModel) //关闭连接时的方法
+	ConInfo  interface{}             //自定义的连接信息，给上层逻辑使用
+	KeyID    int                     //用来标记的ID
+}
+type ISocketMessageHandle interface {
+	//ws的回调
+	SocketDirectCall(ws *SocketModel)
 }
 
 type INsqMessageHandle interface {

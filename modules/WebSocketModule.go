@@ -148,9 +148,9 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 		if wsconn.CloseFun != nil {
 			wsconn.CloseFun(wsconn)
 		}
-		Logger.PDebugKey("websocket client close%+v .", wsconn.KeyID, wsconn.ConInfo)
+		Logger.PDebugKey("websocket client close:%+v .", wsconn.KeyID, wsconn.ConInfo)
 	}()
-	Logger.PDebugKey("websocket client open%+v .", wsconn.KeyID, wsconn.ConInfo)
+	Logger.PDebugKey("websocket client open:%+v .", wsconn.KeyID, wsconn.ConInfo)
 	runchan := make(chan bool, 8) //用来处理超时
 	mod.thgo.Go(
 		func(ctx context.Context) {
