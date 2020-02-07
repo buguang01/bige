@@ -14,6 +14,7 @@ var (
 	nsq   *modules.NsqdModule
 	logic *modules.LogicModule
 	data  *modules.DataBaseModule
+	task  *modules.AutoTaskModule
 )
 
 func TestService(t *testing.T) {
@@ -24,8 +25,9 @@ func TestService(t *testing.T) {
 	data = modules.NewDataBaseModule(&sql.DB{})
 	web = modules.NewWebModule()
 	wss = modules.NewWebSocketModule()
+	task = modules.NewAutoTaskModule()
 	// nsq = modules.NewNsqdModule()
-	smd.AddModule(data, logic, web, wss)
+	smd.AddModule(data, logic, task, web, wss)
 
 	smd.Run()
 	Logger.LogClose()
