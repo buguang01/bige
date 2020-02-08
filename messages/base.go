@@ -54,8 +54,23 @@ type SocketModel struct {
 	KeyID    int                     //用来标记的ID
 }
 type ISocketMessageHandle interface {
-	//ws的回调
+	ISocketResultMessage
+	//socket的回调
 	SocketDirectCall(ws *SocketModel)
+}
+
+type ISocketResultMessage interface{
+	//消息
+	IMessage
+	//消息来源的用户ID
+	GetSendUserID() int
+	//消息来源的服务ID
+	GetSendSID() string
+	//设置来源服务ID
+	SetSendSID(sid string)
+	//目标服务器ID
+	GetTopic() string
+}
 }
 
 type INsqMessageHandle interface {
