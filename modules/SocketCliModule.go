@@ -37,6 +37,10 @@ func NewSocketCliModule(opts ...options) *SocketCliModule {
 		ConnName:    "SocketName",
 		ipPort:      ":8082",
 		RouteHandle: messages.JsonMessageHandleNew(),
+		getnum:      0,
+		sendnum:     0,
+		thgo:        threads.NewThreadGo(),
+		isRun:       false,
 	}
 
 	for _, opt := range opts {
@@ -81,8 +85,13 @@ func (mod *SocketCliModule) hander(ctx context.Context) {
 	buf := &bytes.Buffer{}
 	for {
 		buff, err := ioutil.ReadAll(mod.conn)
-		if err != nil {
-			Logger.PDebug("Socket Cli Conn Read Error:%s.", err.Error())
+		if err != nil || len(buff) == 0 {
+			if err != nil {
+				Logger.PDebug("Socket Cli Conn Read Error:%+v.", err)
+			} else {
+				Logger.PDebug("Socket Cli Conn Read Error EOF.")
+
+			}
 			if mod.reConn() {
 				continue
 			} else {
@@ -101,7 +110,7 @@ func (mod *SocketCliModule) hander(ctx context.Context) {
 		}
 		msg, err := mod.RouteHandle.Unmarshal(buff[:msglen])
 		if err != nil {
-			Logger.PInfo("RouteHandle Unmarshal Error:%s", err.Error())
+			Logger.PInfo("socket cli RouteHandle Unmarshal Error:%s", err.Error())
 			return
 		}
 		modmsg, ok := msg.(messages.ISocketMessageHandle)
@@ -118,7 +127,8 @@ func (mod *SocketCliModule) hander(ctx context.Context) {
 
 		atomic.AddInt64(&mod.getnum, 1)
 		mod.thgo.Try(func(ctx context.Context) {
-			modmsg.SocketDirectCall(skmd)
+			//因为是主动连接，所以不会返回连接，消息里本身应该会带来源信息
+			modmsg.SocketDirectCall(nil)
 		}, nil, nil)
 	}
 }
@@ -129,8 +139,8 @@ func (mod *SocketCliModule) reConn() (result bool) {
 	if mod.isRun {
 		for !result {
 			mod.thgo.Try(func(ctx context.Context) {
+				mod.conn.Close()
 				mod.Init()
-				mod.Start()
 				result = true
 			}, func(err interface{}) {
 				time.Sleep(time.Second)

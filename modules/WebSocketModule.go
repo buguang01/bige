@@ -187,7 +187,7 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 
 				msg, err := mod.RouteHandle.Unmarshal(buff)
 				if err != nil {
-					Logger.PInfo("RouteHandle Unmarshal Error:%s", err.Error())
+					Logger.PInfo("web socket RouteHandle Unmarshal Error:%s", err.Error())
 					return
 				}
 				modmsg, ok := msg.(messages.IWebSocketMessageHandle)

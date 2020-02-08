@@ -1,7 +1,6 @@
 package modules_test
 
 import (
-	"database/sql"
 	"testing"
 
 	"github.com/buguang01/Logger"
@@ -15,20 +14,25 @@ var (
 	logic *modules.LogicModule
 	data  *modules.DataBaseModule
 	task  *modules.AutoTaskModule
+	sk    *modules.SocketModule
+	skcli *modules.SocketCliModule
 )
 
 func TestService(t *testing.T) {
 	Logger.Init(0, "logs", Logger.LogModeFmt)
 
 	smd := modules.NewGameService()
-	logic = modules.NewLogicModule()
-	data = modules.NewDataBaseModule(&sql.DB{})
-	web = modules.NewWebModule()
-	wss = modules.NewWebSocketModule()
-	task = modules.NewAutoTaskModule()
+	// logic = modules.NewLogicModule()
+	// data = modules.NewDataBaseModule(&sql.DB{})
+	// web = modules.NewWebModule()
+	// wss = modules.NewWebSocketModule()
+	// task = modules.NewAutoTaskModule()
+	sk = modules.NewSocketModule(
+		modules.SocketSetTimeout(3),
+	)
+	skcli = modules.NewSocketCliModule()
 	// nsq = modules.NewNsqdModule()
-	smd.AddModule(data, logic, task, web, wss)
-
+	smd.AddModule(sk, skcli)
 	smd.Run()
 	Logger.LogClose()
 }

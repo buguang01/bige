@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"sync/atomic"
@@ -161,12 +160,11 @@ func (mod *SocketModule) handle(conn net.Conn) {
 		listen:
 			for {
 				buff, err := ioutil.ReadAll(conn)
-				if err != nil {
-					if err == io.EOF {
-						runchan <- false
-					}
+				if err != nil || len(buff) == 0 {
+					runchan <- false
 					break listen
 				}
+
 				buf.Write(buff)
 				buff = buf.Bytes()
 				msglen, ok := mod.RouteHandle.CheckMaxLenVaild(buff)
@@ -180,7 +178,7 @@ func (mod *SocketModule) handle(conn net.Conn) {
 
 				msg, err := mod.RouteHandle.Unmarshal(buff[:msglen])
 				if err != nil {
-					Logger.PInfo("RouteHandle Unmarshal Error:%s", err.Error())
+					Logger.PInfo("socket RouteHandle Unmarshal Error:%s", err.Error())
 					return
 				}
 				modmsg, ok := msg.(messages.ISocketMessageHandle)

@@ -48,7 +48,7 @@ type IWebSocketMessageHandle interface {
 
 //SocketModel 用户连接对象
 type SocketModel struct {
-	net.Conn
+	Conn     net.Conn                //连接信息
 	CloseFun func(skmd *SocketModel) //关闭连接时的方法
 	ConInfo  interface{}             //自定义的连接信息，给上层逻辑使用
 	KeyID    int                     //用来标记的ID
@@ -59,7 +59,7 @@ type ISocketMessageHandle interface {
 	SocketDirectCall(ws *SocketModel)
 }
 
-type ISocketResultMessage interface{
+type ISocketResultMessage interface {
 	//消息
 	IMessage
 	//消息来源的用户ID
@@ -70,7 +70,6 @@ type ISocketResultMessage interface{
 	SetSendSID(sid string)
 	//目标服务器ID
 	GetTopic() string
-}
 }
 
 type INsqMessageHandle interface {
