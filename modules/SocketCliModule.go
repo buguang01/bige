@@ -20,6 +20,27 @@ import (
 同步发生消息
 
 */
+
+//这个连接的名字，比如这个连接的目标是什么就叫什么
+func SocketCliSetConnName(name string) options {
+	return func(mod IModule) {
+		mod.(*SocketCliModule).ConnName = name
+	}
+}
+
+func SocketCliSetPort(ipport string) options {
+	return func(mod IModule) {
+		mod.(*SocketCliModule).ipPort = ipport
+	}
+}
+
+//设置路由
+func SocketCliSetRoute(route messages.IMessageHandle) options {
+	return func(mod IModule) {
+		mod.(*SocketCliModule).RouteHandle = route
+	}
+}
+
 type SocketCliModule struct {
 	ConInfo     interface{}             //自定义的连接信息，给上层逻辑使用
 	ConnName    string                  //连接名字
