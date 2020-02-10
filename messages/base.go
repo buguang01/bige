@@ -108,7 +108,7 @@ func (msg *NsqdMessage) GetSendSID() string {
 func (msg *NsqdMessage) SetSendSID(sid string) {
 	msg.SendSID = sid
 }
-func (msg *NsqdMessage) GetActionID() uint32 {
+func (msg *NsqdMessage) GetAction() uint32 {
 	return msg.ActionID
 }
 func (msg *NsqdMessage) GetTopic() string {
