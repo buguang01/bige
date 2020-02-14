@@ -1,6 +1,7 @@
 package messages
 
 import (
+	"errors"
 	"net"
 	"net/http"
 	"runtime"
@@ -30,8 +31,23 @@ type IMessage interface {
 }
 
 type IHttpMessageHandle interface {
+	IMessage
 	//HTTP的回调
 	HttpDirectCall(w http.ResponseWriter, req *http.Request)
+}
+
+type WebMessage struct {
+	ActionID uint32 `json:"ACTIONID"`
+	MemberID int    `json:"MEMBERID"`
+}
+
+func (msg *WebMessage) GetAction() uint32 {
+	return msg.ActionID
+}
+
+//HTTP的回调
+func (msg *WebMessage) HttpDirectCall(w http.ResponseWriter, req *http.Request) {
+	panic(errors.New("not virtual func."))
 }
 
 //WebSocketModel 用户连接对象
@@ -42,8 +58,24 @@ type WebSocketModel struct {
 	KeyID    int                        //用来标记的ID
 }
 type IWebSocketMessageHandle interface {
+	IMessage
 	//ws的回调
 	WebSocketDirectCall(ws *WebSocketModel)
+}
+
+type WebScoketMessage struct {
+	ActionID uint32 `json:"ACTIONID"`
+	MemberID int    `json:"MEMBERID"`
+	Hash     string `json:"HASH"`
+}
+
+func (msg *WebScoketMessage) GetAction() uint32 {
+	return msg.ActionID
+}
+
+//ws的回调
+func (msg *WebScoketMessage) WebSocketDirectCall(ws *WebSocketModel) {
+	panic(errors.New("not virtual func."))
 }
 
 //SocketModel 用户连接对象
@@ -93,10 +125,14 @@ type INsqdResultMessage interface {
 
 //nsqd消息的基础结构
 type NsqdMessage struct {
-	SendUserID int    //发信息用户ID
-	SendSID    string //发信息服务器（回复用的信息）
-	ActionID   uint32 //消息号
-	Topic      string //目标
+	SendUserID int    `json:"SENDUID"`  //发信息用户ID
+	SendSID    string `json:"SENDSID"`  //发信息服务器（回复用的信息）
+	ActionID   uint32 `json:"ACTIONID"` //消息号
+	Topic      string `json:"TOPIC"`    //目标
+}
+
+func (msg *NsqdMessage) GetAction() uint32 {
+	return msg.ActionID
 }
 
 func (msg *NsqdMessage) GetSendUserID() int {
@@ -107,9 +143,6 @@ func (msg *NsqdMessage) GetSendSID() string {
 }
 func (msg *NsqdMessage) SetSendSID(sid string) {
 	msg.SendSID = sid
-}
-func (msg *NsqdMessage) GetAction() uint32 {
-	return msg.ActionID
 }
 func (msg *NsqdMessage) GetTopic() string {
 	return msg.Topic
@@ -124,7 +157,7 @@ type ILogicMessage interface {
 }
 
 type LogicMessage struct {
-	UserID int
+	UserID int `json:"-"`
 }
 
 func (msg *LogicMessage) LogicThreadID() int {

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/buguang01/bige/event"
 	"github.com/buguang01/util"
 )
 
@@ -30,11 +29,11 @@ func (msghandle HttpJsonMessageHandle) Marshal(msgid uint32, data interface{}) (
 
 //解码
 func (msghandle HttpJsonMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
-	js := make(event.JsonMap)
+	js := make(JsonMap)
 	if err = json.Unmarshal(buff, &js); err != nil {
 		return nil, err
 	}
-	data, err = msghandle.GetRoute(uint32(js.GetAction()))
+	data, err = msghandle.GetRoute(js.GetAction())
 	if err != nil {
 		return nil, err
 	}
