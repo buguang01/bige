@@ -104,6 +104,30 @@ type ISocketResultMessage interface {
 	GetTopic() string
 }
 
+type ScoketMessage struct {
+	SendUserID int    `json:"SENDUID"`  //发信息用户ID
+	SendSID    string `json:"SENDSID"`  //发信息服务器（回复用的信息）
+	ActionID   uint32 `json:"ACTIONID"` //消息号
+	Topic      string `json:"TOPIC"`    //目标
+}
+
+func (msg *ScoketMessage) GetAction() uint32 {
+	return msg.ActionID
+}
+
+func (msg *ScoketMessage) GetSendUserID() int {
+	return msg.SendUserID
+}
+func (msg *ScoketMessage) GetSendSID() string {
+	return msg.SendSID
+}
+func (msg *ScoketMessage) SetSendSID(sid string) {
+	msg.SendSID = sid
+}
+func (msg *ScoketMessage) GetTopic() string {
+	return msg.Topic
+}
+
 type INsqMessageHandle interface {
 	INsqdResultMessage
 	//Nsq的回调
@@ -165,6 +189,11 @@ func (msg *LogicMessage) LogicThreadID() int {
 	//分配时，按用户ID进行取余
 	cpu := runtime.NumCPU() * 10
 	return msg.UserID % cpu
+}
+
+//调用方法
+func (msg *LogicMessage) MessageHandle() {
+	panic(errors.New("not virtual func."))
 }
 
 //DataBase的处理接口
