@@ -1,7 +1,10 @@
 package modules_test
 
 import (
+	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/modules"
@@ -35,4 +38,23 @@ func TestService(t *testing.T) {
 	smd.AddModule(sk, skcli)
 	smd.Run()
 	Logger.LogClose()
+}
+
+func TestTask(t *testing.T) {
+	Logger.Init(0, "logs", Logger.LogModeFmt)
+	mod := modules.NewAutoTaskModule()
+	mod.Init()
+	mod.Start()
+	tk := new(TaskModel)
+	tk.AutoTaskModel.Handle = tk.Handle
+	mod.AddTask(tk)
+	time.Sleep(100 * time.Second)
+}
+
+type TaskModel struct {
+	modules.AutoTaskModel
+}
+
+func (task *TaskModel) Handle(ctx context.Context) {
+	fmt.Println("abc")
 }

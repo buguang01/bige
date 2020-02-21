@@ -2,7 +2,6 @@ package modules
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 
@@ -97,7 +96,11 @@ func (mod *AutoTaskModule) DelRask(name string) bool {
 	return true
 }
 
-//循环任务接口
+/*
+循环任务接口
+使用AddTask添加到module中时，如果任务以存在就不做任何事
+使用ReTask添加到module中时，如果任务已存在就会先把之前的停下来，再把自己添加到管理器中
+*/
 type IAutoTaskModel interface {
 	//任务名字（唯一性）
 	GetTaskName() string
@@ -108,7 +111,8 @@ type IAutoTaskModel interface {
 }
 
 type AutoTaskModel struct {
-	thgo *threads.ThreadGo
+	thgo   *threads.ThreadGo
+	Handle func(ctx context.Context) //需要实现这个方法
 }
 
 //任务名字（唯一性）需要重载更新这个名字
@@ -127,6 +131,6 @@ func (task *AutoTaskModel) Stop() {
 	task.thgo.CloseWait()
 }
 
-func (task *AutoTaskModel) Handle(ctx context.Context) {
-	panic(errors.New("任务需要重载这个方法"))
-}
+// func (task *AutoTaskModel) Handle(ctx context.Context) {
+// 	panic(errors.New("任务需要重载这个方法"))
+// }
