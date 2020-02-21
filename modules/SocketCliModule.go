@@ -82,7 +82,7 @@ func (mod *SocketCliModule) Init() {
 //Start 启动
 func (mod *SocketCliModule) Start() {
 	mod.isRun = true
-	mod.thgo.Go(mod.hander)
+	mod.thgo.Go(mod.handle)
 	Logger.PStatus("Socket Cli Module Start.")
 }
 
@@ -102,7 +102,7 @@ func (mod *SocketCliModule) PrintStatus() string {
 		atomic.LoadInt64(&mod.sendnum))
 }
 
-func (mod *SocketCliModule) hander(ctx context.Context) {
+func (mod *SocketCliModule) handle(ctx context.Context) {
 	buf := &bytes.Buffer{}
 	for {
 		buff, err := ioutil.ReadAll(mod.conn)

@@ -8,8 +8,8 @@ import (
 
 	"github.com/buguang01/Logger"
 	"github.com/buguang01/bige/event"
-	"github.com/buguang01/util/threads"
 	"github.com/buguang01/util"
+	"github.com/buguang01/util/threads"
 )
 
 //逻辑模块
@@ -50,7 +50,7 @@ func (this *LogicModule) Init() {
 }
 
 func (this *LogicModule) Start() {
-	this.mgGo.Go(this.Hander)
+	this.mgGo.Go(this.Handle)
 	Logger.PStatus("Logic Module Start!")
 }
 
@@ -76,7 +76,7 @@ func (this *LogicModule) AddMsg(logicmd event.LogicModel) {
 	this.chanLogic <- logicmd
 }
 
-func (this *LogicModule) Hander(ctx context.Context) {
+func (this *LogicModule) Handle(ctx context.Context) {
 	tk := time.NewTimer(1 * time.Second)
 	loop := 0
 	for {

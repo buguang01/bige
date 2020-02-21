@@ -58,7 +58,7 @@ func (mod *LogicModule) Init() {
 }
 
 func (mod *LogicModule) Start() {
-	mod.thgo.Go(mod.Hander)
+	mod.thgo.Go(mod.Handle)
 	Logger.PStatus("Logic Module Start!")
 }
 
@@ -87,7 +87,7 @@ func (mod *LogicModule) AddMsg(logicmd messages.ILogicMessage) {
 
 }
 
-func (mod *LogicModule) Hander(ctx context.Context) {
+func (mod *LogicModule) Handle(ctx context.Context) {
 	tk := time.NewTicker(1 * time.Second)
 	loop := 0
 	for {

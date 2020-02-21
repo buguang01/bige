@@ -21,9 +21,9 @@ func GameServiceSetPTime(ptime time.Duration) servOptions {
 	}
 }
 
-func GameServiceSetStopHander(hander func()) servOptions {
+func GameServiceSetStopHander(handle func()) servOptions {
 	return func(mod *GameService) {
-		mod.ServiceStopHander = hander
+		mod.ServiceStopHander = handle
 	}
 }
 
