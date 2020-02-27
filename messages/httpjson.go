@@ -22,13 +22,13 @@ func HttpJsonMessageHandleNew(opts ...options) (msghandle *HttpJsonMessageHandle
 }
 
 //编码
-func (msghandle HttpJsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {
+func (msghandle *HttpJsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {
 	in_data, err := json.Marshal(data)
 	return in_data, err
 }
 
 //解码
-func (msghandle HttpJsonMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
+func (msghandle *HttpJsonMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
 	js := make(JsonMap)
 	if err = json.Unmarshal(buff, &js); err != nil {
 		return nil, err

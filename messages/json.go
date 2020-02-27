@@ -39,7 +39,7 @@ func JsonMessageHandleNew(opts ...options) (msghandle *JsonMessageHandle) {
 }
 
 //编码
-func (msghandle JsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {
+func (msghandle *JsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {
 	buff := &bytes.Buffer{}
 	in_data, err := json.Marshal(data)
 	tmpbuf := make([]byte, 4)
@@ -53,7 +53,7 @@ func (msghandle JsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]by
 }
 
 //解码
-func (msghandle JsonMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
+func (msghandle *JsonMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
 	pklen := binary.BigEndian.Uint32(buff[:4])
 	pklen = pklen ^ msghandle.msgHead
 	if pklen != uint32(len(buff)) {
