@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"sync/atomic"
 	"time"
@@ -159,16 +159,19 @@ func (mod *SocketModule) handle(conn net.Conn) {
 			buf := &bytes.Buffer{}
 		listen:
 			for {
-				buff, err := ioutil.ReadAll(conn)
-				if err != nil || len(buff) == 0 {
-					runchan <- false
+				rdbuff := make([]byte, 10240)
+				n, err := conn.Read(rdbuff)
+				if err != nil {
+					if err == io.EOF {
+						runchan <- false
+					}
 					break listen
 				}
-
-				buf.Write(buff)
-				buff = buf.Bytes()
-				msglen, ok := mod.RouteHandle.CheckMaxLenVaild(buff)
-				if !ok {
+				buf.Write(rdbuff[:n])
+				buff := buf.Bytes()
+				if msglen, ok := mod.RouteHandle.CheckMaxLenVaild(buff); ok {
+					buff = buf.Next(int(msglen))
+				} else {
 					if msglen == 0 {
 						//消息长度异常
 						break listen
@@ -176,7 +179,7 @@ func (mod *SocketModule) handle(conn net.Conn) {
 					continue
 				}
 
-				msg, err := mod.RouteHandle.Unmarshal(buff[:msglen])
+				msg, err := mod.RouteHandle.Unmarshal(buff)
 				if err != nil {
 					Logger.PInfo("socket RouteHandle Unmarshal Error:%s", err.Error())
 					return
@@ -187,10 +190,6 @@ func (mod *SocketModule) handle(conn net.Conn) {
 					return
 				} else {
 					Logger.PInfo("socket Get Msg:%+v", msg)
-				}
-				buf.Reset()
-				if uint32(len(buff)) > msglen {
-					buf.Write(buff[msglen:])
 				}
 				runchan <- true
 				atomic.AddInt64(&mod.getnum, 1)

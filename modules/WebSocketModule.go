@@ -1,10 +1,10 @@
 package modules
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sync/atomic"
 	"time"
@@ -175,14 +175,27 @@ func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
 		})
 	mod.thgo.Try(
 		func(ctx context.Context) {
+			buf := &bytes.Buffer{}
 		listen:
 			for {
-				buff, err := ioutil.ReadAll(conn)
+				rdbuff := make([]byte, 10240)
+				n, err := conn.Read(rdbuff)
 				if err != nil {
 					if err == io.EOF {
 						runchan <- false
 					}
 					break listen
+				}
+				buf.Write(rdbuff[:n])
+				buff := buf.Bytes()
+				if msglen, ok := mod.RouteHandle.CheckMaxLenVaild(buff); ok {
+					buff = buf.Next(int(msglen))
+				} else {
+					if msglen == 0 {
+						//消息长度异常
+						break listen
+					}
+					continue
 				}
 
 				msg, err := mod.RouteHandle.Unmarshal(buff)

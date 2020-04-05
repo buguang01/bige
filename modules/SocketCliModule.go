@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"sync/atomic"
 	"time"
@@ -104,9 +103,11 @@ func (mod *SocketCliModule) PrintStatus() string {
 
 func (mod *SocketCliModule) handle(ctx context.Context) {
 	buf := &bytes.Buffer{}
+listen:
 	for {
-		buff, err := ioutil.ReadAll(mod.conn)
-		if err != nil || len(buff) == 0 {
+		rdbuff := make([]byte, 10240)
+		n, err := mod.conn.Read(rdbuff)
+		if err != nil || n == 0 {
 			if err != nil {
 				Logger.PDebug("Socket Cli Conn Read Error:%+v.", err)
 			} else {
@@ -119,17 +120,21 @@ func (mod *SocketCliModule) handle(ctx context.Context) {
 				return
 			}
 		}
-		buf.Write(buff)
-		buff = buf.Bytes()
-		msglen, ok := mod.RouteHandle.CheckMaxLenVaild(buff)
-		if !ok {
+
+		buf.Write(rdbuff[:n])
+		buff := buf.Bytes()
+		if msglen, ok := mod.RouteHandle.CheckMaxLenVaild(buff); ok {
+			buff = buf.Next(int(msglen))
+		} else {
 			if msglen == 0 {
 				//消息长度异常
-				return
+				break listen
 			}
 			continue
 		}
-		msg, err := mod.RouteHandle.Unmarshal(buff[:msglen])
+
+		msg, err := mod.RouteHandle.Unmarshal(buff)
+
 		if err != nil {
 			Logger.PInfo("socket cli RouteHandle Unmarshal Error:%s", err.Error())
 			return
@@ -140,10 +145,6 @@ func (mod *SocketCliModule) handle(ctx context.Context) {
 			return
 		} else {
 			Logger.PInfo("socket cli Get Msg:%+v", msg)
-		}
-		buf.Reset()
-		if uint32(len(buff)) > msglen {
-			buf.Write(buff[msglen:])
 		}
 
 		atomic.AddInt64(&mod.getnum, 1)
