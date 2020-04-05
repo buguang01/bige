@@ -30,7 +30,7 @@ func WebSocketSetTimeout(timeout time.Duration) options {
 }
 
 //连接成功后回调，可以用来获取一些连接的信息，比如IP
-func WebScoketSetOnlineFun(fun func(conn *messages.WebSocketModel)) options {
+func WebSocketSetOnlineFun(fun func(conn *messages.WebSocketModel)) options {
 	return func(mod IModule) {
 		mod.(*WebSocketModule).webSocketOnlineFun = fun
 	}
