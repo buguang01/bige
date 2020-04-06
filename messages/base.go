@@ -57,6 +57,17 @@ type WebSocketModel struct {
 	ConInfo  interface{}                //自定义的连接信息，给上层逻辑使用
 	KeyID    int                        //用来标记的ID
 }
+
+//发的是字符串
+func (ws *WebSocketModel) SendStr(data string) error {
+	return websocket.Message.Send(ws.Conn, data)
+}
+
+//发的是二进制数据
+func (ws *WebSocketModel) SendByte(data []byte) error {
+	return websocket.Message.Send(ws.Conn, data)
+}
+
 type IWebSocketMessageHandle interface {
 	IMessage
 	//ws的回调
