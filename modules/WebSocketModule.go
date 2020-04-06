@@ -43,6 +43,14 @@ func WebSocketSetRoute(route messages.IMessageHandle) options {
 	}
 }
 
+//设置Frame
+//websocket.XXXFrame default websocket.BinaryFrame
+func WebSocketSetFrame(frame byte) options {
+	return func(mod IModule) {
+		mod.(*WebSocketModule).frame = frame
+	}
+}
+
 type WebSocketModule struct {
 	ipPort             string                              //HTTP监听的地址
 	timeout            time.Duration                       //超时时间
@@ -53,6 +61,7 @@ type WebSocketModule struct {
 	connlen            int64                               //连接数
 	httpServer         *http.Server                        //HTTP请求的对象
 	thgo               *threads.ThreadGo                   //协程管理器
+	frame              byte                                //websocket PayloadType
 }
 
 func NewWebSocketModule(opts ...options) *WebSocketModule {
@@ -65,6 +74,7 @@ func NewWebSocketModule(opts ...options) *WebSocketModule {
 		thgo:               threads.NewThreadGo(),
 		RouteHandle:        messages.JsonMessageHandleNew(),
 		webSocketOnlineFun: nil,
+		frame:              websocket.BinaryFrame, //因为我们用的是路由是二进制的方式，所以这里要用这个值
 	}
 
 	for _, opt := range opts {
@@ -126,7 +136,7 @@ func (mod *WebSocketModule) PrintStatus() string {
 
 //Handle http发来的所有请求都会到这个方法来
 func (mod *WebSocketModule) Handle(conn *websocket.Conn) {
-
+	conn.PayloadType = mod.frame
 	//标注子连接是不是都停下来
 	mod.thgo.Wg.Add(1)
 	defer mod.thgo.Wg.Done()
