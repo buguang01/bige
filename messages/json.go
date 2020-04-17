@@ -37,6 +37,9 @@ func JsonMessageHandleNew(opts ...options) (msghandle *JsonMessageHandle) {
 	}
 	return msghandle
 }
+func (msghandle *JsonMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
+	return nil, nil
+}
 
 //编码
 func (msghandle *JsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {

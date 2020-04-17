@@ -2,33 +2,32 @@ package messages
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 
 	"github.com/buguang01/util"
+	"github.com/gogo/protobuf/proto"
 )
 
-type GateJsonMessageHandle struct {
+type GateProtoMessageHandle struct {
 	msgHead   uint32                 //消息头
 	msgMaxLen uint16                 //消息最大长度
 	routelist map[uint32]interface{} //消息路由列表
-	defType   interface{}            //消息默认类型如果设置了，会在对没有处理的消息进行处理
 }
 
-func GateJsonMessageSetMsgHead(msghead uint32) options {
+func GateProtoMessageSetMsgHead(msghead uint32) options {
 	return func(msghandle IMessageHandle) {
-		msghandle.(*GateJsonMessageHandle).msgHead = msghead
+		msghandle.(*GateProtoMessageHandle).msgHead = msghead
 	}
 }
 
-func GateJsonMessageSetMsgMaxLen(max uint16) options {
+func GateProtoMessageSetMsgMaxLen(max uint16) options {
 	return func(msghandle IMessageHandle) {
-		msghandle.(*GateJsonMessageHandle).msgMaxLen = max
+		msghandle.(*GateProtoMessageHandle).msgMaxLen = max
 	}
 }
 
-func GateJsonMessageHandleNew(opts ...options) (msghandle *GateJsonMessageHandle) {
-	msghandle = &GateJsonMessageHandle{
+func GateProtoMessageHandleNew(opts ...options) (msghandle *GateProtoMessageHandle) {
+	msghandle = &GateProtoMessageHandle{
 		routelist: make(map[uint32]interface{}),
 		msgHead:   uint32(0x12340000),
 		msgMaxLen: ^uint16(0),
@@ -39,12 +38,12 @@ func GateJsonMessageHandleNew(opts ...options) (msghandle *GateJsonMessageHandle
 	return msghandle
 }
 
-func (msghandle *GateJsonMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
+func (msghandle *GateProtoMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
 	return nil, nil
 }
 
 //编码
-func (msghandle *GateJsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {
+func (msghandle *GateProtoMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {
 	return nil, nil
 	// buff := &bytes.Buffer{}
 	// in_data, err := json.Marshal(data)
@@ -59,9 +58,7 @@ func (msghandle *GateJsonMessageHandle) Marshal(msgid uint32, data interface{}) 
 }
 
 //解码
-func (msghandle *GateJsonMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
-	// read := bytes.NewBuffer(buff)
-
+func (msghandle *GateProtoMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
 	pklen := binary.BigEndian.Uint32(buff[:4])
 	pklen = pklen ^ msghandle.msgHead
 	if pklen != uint32(len(buff)) {
@@ -73,36 +70,27 @@ func (msghandle *GateJsonMessageHandle) Unmarshal(buff []byte) (data interface{}
 	if err != nil {
 		return nil, err
 	}
-	gatemsg := msget.(IGateMessage)
-	gatemsg.SetMsgID(msgid)
 	buff = buff[4:]
-	gatemsg.SetMsgID(binary.BigEndian.Uint32(buff[:4]))
-	buff = buff[4:]
-	gatemsg.SetTargetID(binary.BigEndian.Uint32(buff[:4]))
-	err = json.Unmarshal(buff, msget)
-
+	err = proto.Unmarshal(buff, msget.(proto.Message))
 	return msget, err
 }
 
 //设置消息路由
-func (msghandle *GateJsonMessageHandle) SetRoute(msgid uint32, msg interface{}) {
+func (msghandle *GateProtoMessageHandle) SetRoute(msgid uint32, msg interface{}) {
 	msghandle.routelist[msgid] = msg
 }
 
 //按消息拿出消息处理实例
-func (msghandle *GateJsonMessageHandle) GetRoute(msgid uint32) (result interface{}, err error) {
+func (msghandle *GateProtoMessageHandle) GetRoute(msgid uint32) (result interface{}, err error) {
 	if msget, ok := msghandle.routelist[msgid]; ok {
 		return util.ReflectNew(msget)
-	} else if msghandle.defType != nil {
-		//当没找到的时候，拿出默认的类型
-		return util.ReflectNew(msghandle.defType)
 	}
 	return nil, fmt.Errorf("Not exist MsgID:%d.", msgid)
 }
 
 //一个消息是否收完了
 //返回这个消息应该的长度，和是否收完的信息
-func (msghandle *GateJsonMessageHandle) CheckMaxLenVaild(buff []byte) (msglen uint32, ok bool) {
+func (msghandle *GateProtoMessageHandle) CheckMaxLenVaild(buff []byte) (msglen uint32, ok bool) {
 	pklen := binary.BigEndian.Uint32(buff[:4])
 	pklen = pklen ^ msghandle.msgHead
 	if pklen > uint32(msghandle.msgMaxLen) {

@@ -21,6 +21,10 @@ func HttpJsonMessageHandleNew(opts ...options) (msghandle *HttpJsonMessageHandle
 	return msghandle
 }
 
+func (msghandle *HttpJsonMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
+	return nil, nil
+}
+
 //编码
 func (msghandle *HttpJsonMessageHandle) Marshal(msgid uint32, data interface{}) ([]byte, error) {
 	in_data, err := json.Marshal(data)

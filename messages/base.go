@@ -12,6 +12,8 @@ import (
 
 //消息收发接口
 type IMessageHandle interface {
+	//带Gateway的编码
+	GateMarshal(gate *GateMessage, data interface{}) ([]byte, error)
 	//编码
 	Marshal(msgid uint32, data interface{}) ([]byte, error)
 	//解码
