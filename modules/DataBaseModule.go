@@ -50,6 +50,9 @@ func NewDataBaseModule(conndb *sql.DB, opts ...options) *DataBaseModule {
 		saveNum:   0,
 		thgo:      threads.NewThreadGo(),
 	}
+	for _, opt := range opts {
+		opt(result)
+	}
 	return result
 }
 

@@ -50,6 +50,9 @@ func NewLogicModule(opts ...options) *LogicModule {
 		runing:    0,
 		thgo:      threads.NewThreadGo(),
 	}
+	for _, opt := range opts {
+		opt(result)
+	}
 	return result
 }
 
