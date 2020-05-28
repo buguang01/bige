@@ -26,6 +26,9 @@ func NewAutoTaskModule(opts ...options) *AutoTaskModule {
 		lock:     &sync.Mutex{},
 		thgo:     threads.NewThreadGo(),
 	}
+	for _, opt := range opts {
+		opt(result)
+	}
 	return result
 }
 
