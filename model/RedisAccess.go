@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"runtime"
 	"time"
 
 	"github.com/buguang01/Logger"
@@ -10,44 +11,97 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-//RedisConfigModel 配置信息
-type RedisConfigModel struct {
-	ConAddr     string        //连接字符串
-	MaxIdle     int           //最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态
-	MaxActive   int           //最大的激活连接数，表示同时最多有N个连接 ，为0事表示没有限制
-	IdleTimeout time.Duration //最大的空闲连接等待时间，超过此时间后，空闲连接将被关闭(秒)
-	Password    string        //连接密码
-	// Wait bool  //是否等待，设计中应该都是要等待的，所以就不开放了。
+var (
+	//用来设置默认协程数
+	moduleCap = runtime.NumCPU() * 10
+)
+
+//设置redis地址,带端口
+func RedisSetAddr(addr string) redisoptions {
+	return func(mod *RedisAccess) {
+		mod.addr = addr
+	}
 }
+
+//设置redis,auth(进入密码)
+func RedisSetAuth(auth string) redisoptions {
+	return func(mod *RedisAccess) {
+		mod.auth = auth
+	}
+}
+
+//设置redis默认的indexdb
+func RedisSetIndexDB(indexdb int) redisoptions {
+	return func(mod *RedisAccess) {
+		mod.indexdb = indexdb
+	}
+}
+
+//设置redis最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态
+func RedisSetMaxIdle(maxidle int) redisoptions {
+	return func(mod *RedisAccess) {
+		mod.maxIdle = maxidle
+	}
+}
+
+//最大的激活连接数，表示同时最多有N个连接 ，为0事表示没有限制
+func RedisSetMaxActive(maxactive int) redisoptions {
+	return func(mod *RedisAccess) {
+		mod.maxActive = maxactive
+	}
+}
+
+//最大的空闲连接等待时间，超过此时间后，空闲连接将被关闭(秒)
+func RedisSetIdleTimeout(idleTimeout time.Duration) redisoptions {
+	return func(mod *RedisAccess) {
+		mod.idleTimeout = idleTimeout * time.Second
+	}
+}
+
+type redisoptions func(mod *RedisAccess)
 
 //RedisAccess redis 管理器
 type RedisAccess struct {
-	DBConobj *redis.Pool //redis连接池
-	cg       *RedisConfigModel
+	DBConobj    *redis.Pool   //redis连接池
+	addr        string        //连接字符串
+	indexdb     int           //默认DB号
+	auth        string        //连接密码
+	maxIdle     int           //最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态
+	maxActive   int           //最大的激活连接数，表示同时最多有N个连接 ，为0事表示没有限制
+	idleTimeout time.Duration //最大的空闲连接等待时间，超过此时间后，空闲连接将被关闭(秒)
 }
 
 //NewRedisAccess 生成新的管理器
-func NewRedisAccess(conf *RedisConfigModel) *RedisAccess {
-	result := new(RedisAccess)
-	result.cg = conf
-	result.DBConobj = redis.NewPool(result.dial, result.cg.MaxIdle)
-	result.DBConobj.MaxActive = result.cg.MaxActive
-	result.DBConobj.IdleTimeout = result.cg.IdleTimeout * time.Second
+func NewRedisAccess(opts ...redisoptions) *RedisAccess {
+	result := &RedisAccess{
+		addr:        "127.0.0.1:6379",
+		auth:        "",
+		maxIdle:     moduleCap / 10,
+		maxActive:   moduleCap,
+		idleTimeout: 3600 * time.Second,
+	}
+	for _, opt := range opts {
+		opt(result)
+	}
+	result.DBConobj = redis.NewPool(result.dial, result.maxIdle)
+	result.DBConobj.MaxActive = result.maxActive
+	result.DBConobj.IdleTimeout = result.idleTimeout
 	result.DBConobj.Wait = true
 	result.DBConobj.TestOnBorrow = result.testOnBorrow
+
 	return result
 }
 
 func (access *RedisAccess) dial() (redis.Conn, error) {
-	c, err := redis.Dial("tcp", access.cg.ConAddr)
+	c, err := redis.Dial("tcp", access.addr)
 	if err != nil {
 		return nil, err
 	}
-	if access.cg.Password == "" {
+	if access.auth == "" {
 		Logger.PDebug("redis dial.")
 		return c, err
 	}
-	if _, err := c.Do("AUTH", access.cg.Password); err != nil {
+	if _, err := c.Do("AUTH", access.auth); err != nil {
 		c.Close()
 		return nil, err
 	}
@@ -57,10 +111,10 @@ func (access *RedisAccess) dial() (redis.Conn, error) {
 
 func (access *RedisAccess) testOnBorrow(c redis.Conn, t time.Time) error {
 	// Logger.PDebug("redis testOnBorrow.")
-	if time.Since(t) < time.Minute {
-		return nil
-	}
-	_, err := c.Do("PING")
+	// if time.Since(t) < time.Minute {
+	// 	return nil
+	// }
+	_, err := c.Do("SELECT", access.indexdb)
 	return err
 }
 

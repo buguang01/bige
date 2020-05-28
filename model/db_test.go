@@ -43,11 +43,7 @@ func TestDBTran(t *testing.T) {
 func TestQuery(t *testing.T) {
 	Logger.Init(Logger.LogLeveldebuglevel, "", Logger.LogModeFmt)
 	defer Logger.LogClose()
-	cf := model.RedisConfigModel{
-		ConAddr:  "152.136.222.222:6379",
-		Password: "cMz8eEv3fT0XD2ue",
-	}
-	redis := model.NewRedisAccess(&cf)
+	redis := model.NewRedisAccess()
 	rd := redis.GetConn()
 	arr, _ := rd.DictGetAllByStringArray("testlist")
 	fmt.Println(arr)
