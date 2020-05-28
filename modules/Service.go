@@ -30,11 +30,12 @@ func GameServiceSetStopHander(handle func()) servOptions {
 type servOptions func(mod *GameService)
 
 type GameService struct {
-	ServiceID         int           //游戏服务器ID
-	PStatusTime       time.Duration //打印状态的时间（秒）
-	mlist             []IModule
-	isrun             bool
-	ServiceStopHander func() //当服务器被关掉的时候，先调用的方法
+	ServiceID          int           //游戏服务器ID
+	PStatusTime        time.Duration //打印状态的时间（秒）
+	mlist              []IModule
+	isrun              bool
+	ServiceStopHander  func() //当服务器被关掉的时候，先调用的方法
+	ServiceStartHander func() //当服务器所有服务都启动后，先调用的方法
 }
 
 func NewGameService(opts ...servOptions) *GameService {
@@ -65,6 +66,9 @@ func (gs *GameService) Run() {
 	//
 	for _, md := range gs.mlist {
 		md.Start()
+	}
+	if gs.ServiceStartHander != nil {
+		gs.ServiceStartHander()
 	}
 	//这里要柱塞等关闭
 	c := make(chan os.Signal, 1)
