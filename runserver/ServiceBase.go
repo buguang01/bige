@@ -18,10 +18,11 @@ type GameConfigModel struct {
 
 //GameServiceBase 游戏模块管理
 type GameServiceBase struct {
-	mlist             []module.IModule
-	cg                *GameConfigModel
-	isrun             bool
-	ServiceStopHander func() //当服务器被关掉的时候，先调用的方法
+	mlist              []module.IModule
+	cg                 *GameConfigModel
+	isrun              bool
+	ServiceStopHander  func() //当服务器被关掉的时候，先调用的方法
+	ServiceStartHander func() //当服务器所有服务都启动后，先调用的方法
 }
 
 //NewGameService 生成一个新的游戏服务器
@@ -44,6 +45,9 @@ func (gs *GameServiceBase) Run() {
 	//
 	for _, md := range gs.mlist {
 		md.Start()
+	}
+	if gs.ServiceStartHander != nil {
+		gs.ServiceStartHander()
 	}
 	//这里要柱塞等关闭
 	c := make(chan os.Signal, 1)
