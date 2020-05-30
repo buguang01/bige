@@ -172,9 +172,27 @@ func (mod *SocketCliModule) reConn() (result bool) {
 	return result
 }
 
+/*
+下面这二个方法主要还是例子，
+是给game连接gate的时候使用，
+如果有异步啊，队列管理啊等的需求，可以自己写对应的全局方法来实现会比较好
+
+*/
+
 //同步写入消息
-func (mod *SocketCliModule) AddMsgSyn(msg messages.ISocketResultMessage) error {
+func (mod *SocketCliModule) AddMsgSyn(msg messages.IMessage) error {
 	if buff, err := mod.RouteHandle.Marshal(msg.GetAction(), msg); err != nil {
+		return err
+	} else if _, err = mod.conn.Write(buff); err != nil {
+		return err
+	}
+	atomic.AddInt64(&mod.sendnum, 1)
+	return nil
+}
+
+//同步写入网关的消息
+func (mod *SocketCliModule) AddMsgSynByGate(gate messages.IGateMessage, msg interface{}) error {
+	if buff, err := mod.RouteHandle.GateMarshal(gate, msg); err != nil {
 		return err
 	} else if _, err = mod.conn.Write(buff); err != nil {
 		return err
