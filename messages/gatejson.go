@@ -9,6 +9,7 @@ import (
 	"github.com/buguang01/util"
 )
 
+//这个还没有完成
 type GateJsonMessageHandle struct {
 	msgHead   uint32                 //消息头
 	msgMaxLen uint16                 //消息最大长度
