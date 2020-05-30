@@ -1,6 +1,0 @@
-[
-    {"ACTION":1002,"JSON":{"HASH":12345678,"MEMBERID":110011,"name":"abc"}},
-    {"ACTION":1001,"JSON":{"HASH":1234222533678,"MEMBERID":110011,"name":"abc"}},
-    {"ACTION":1001},
-    {"ACTION":1002}
-]
