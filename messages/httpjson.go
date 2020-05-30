@@ -21,7 +21,7 @@ func HttpJsonMessageHandleNew(opts ...options) (msghandle *HttpJsonMessageHandle
 	return msghandle
 }
 
-func (msghandle *HttpJsonMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
+func (msghandle *HttpJsonMessageHandle) GateMarshal(gate IGateMessage, data interface{}) ([]byte, error) {
 	return nil, nil
 }
 
@@ -33,11 +33,11 @@ func (msghandle *HttpJsonMessageHandle) Marshal(msgid uint32, data interface{}) 
 
 //解码
 func (msghandle *HttpJsonMessageHandle) Unmarshal(buff []byte) (data interface{}, err error) {
-	js := make(JsonMap)
+	js := &MessageJson{}
 	if err = json.Unmarshal(buff, &js); err != nil {
 		return nil, err
 	}
-	data, err = msghandle.GetRoute(js.GetAction())
+	data, err = msghandle.GetRoute(js.ActionID)
 	if err != nil {
 		return nil, err
 	}

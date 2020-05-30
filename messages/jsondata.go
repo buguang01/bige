@@ -72,3 +72,7 @@ func (js JsonArray) GetIntArray() []int {
 	}
 	return result
 }
+
+type MessageJson struct {
+	ActionID uint32 `json:"ACTIONID"`
+}

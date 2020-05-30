@@ -13,7 +13,7 @@ import (
 //消息收发接口
 type IMessageHandle interface {
 	//带Gateway的编码
-	GateMarshal(gate *GateMessage, data interface{}) ([]byte, error)
+	GateMarshal(gate IGateMessage, data interface{}) ([]byte, error)
 	//编码
 	Marshal(msgid uint32, data interface{}) ([]byte, error)
 	//解码
@@ -30,6 +30,7 @@ type options func(msghandle IMessageHandle)
 
 type IMessage interface {
 	GetAction() uint32
+	SetAction(msgid uint32)
 }
 
 type IHttpMessageHandle interface {
@@ -45,6 +46,9 @@ type WebMessage struct {
 
 func (msg *WebMessage) GetAction() uint32 {
 	return msg.ActionID
+}
+func (msg *WebMessage) SetAction(msgid uint32) {
+	msg.ActionID = msgid
 }
 
 //HTTP的回调
@@ -84,6 +88,9 @@ type WebScoketMessage struct {
 
 func (msg *WebScoketMessage) GetAction() uint32 {
 	return msg.ActionID
+}
+func (msg *WebScoketMessage) SetAction(msgid uint32) {
+	msg.ActionID = msgid
 }
 
 //ws的回调
@@ -127,7 +134,9 @@ type ScoketMessage struct {
 func (msg *ScoketMessage) GetAction() uint32 {
 	return msg.ActionID
 }
-
+func (msg *ScoketMessage) SetAction(msgid uint32) {
+	msg.ActionID = msgid
+}
 func (msg *ScoketMessage) GetSendUserID() int {
 	return msg.SendUserID
 }
@@ -171,7 +180,9 @@ type NsqdMessage struct {
 func (msg *NsqdMessage) GetAction() uint32 {
 	return msg.ActionID
 }
-
+func (msg *NsqdMessage) SetAction(msgid uint32) {
+	msg.ActionID = msgid
+}
 func (msg *NsqdMessage) GetSendUserID() int {
 	return msg.SendUserID
 }

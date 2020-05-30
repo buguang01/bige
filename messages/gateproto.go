@@ -38,7 +38,7 @@ func GateProtoMessageHandleNew(opts ...options) (msghandle *GateProtoMessageHand
 	return msghandle
 }
 
-func (msghandle *GateProtoMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
+func (msghandle *GateProtoMessageHandle) GateMarshal(gate IGateMessage, data interface{}) ([]byte, error) {
 	return nil, nil
 }
 

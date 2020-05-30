@@ -37,7 +37,7 @@ func JsonMessageHandleNew(opts ...options) (msghandle *JsonMessageHandle) {
 	}
 	return msghandle
 }
-func (msghandle *JsonMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
+func (msghandle *JsonMessageHandle) GateMarshal(gate IGateMessage, data interface{}) ([]byte, error) {
 	return nil, nil
 }
 
@@ -70,6 +70,7 @@ func (msghandle *JsonMessageHandle) Unmarshal(buff []byte) (data interface{}, er
 	}
 	buff = buff[4:]
 	err = json.Unmarshal(buff, msget)
+	msget.(IMessage).SetAction(msgid)
 	return msget, err
 }
 

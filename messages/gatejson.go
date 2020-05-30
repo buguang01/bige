@@ -1,6 +1,7 @@
 package messages
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -39,8 +40,21 @@ func GateJsonMessageHandleNew(opts ...options) (msghandle *GateJsonMessageHandle
 	return msghandle
 }
 
-func (msghandle *GateJsonMessageHandle) GateMarshal(gate *GateMessage, data interface{}) ([]byte, error) {
-	return nil, nil
+func (msghandle *GateJsonMessageHandle) GateMarshal(gate IGateMessage, data interface{}) ([]byte, error) {
+	buff := &bytes.Buffer{}
+	in_data, err := json.Marshal(data)
+	tmpbuf := make([]byte, 4)
+	pklen := uint32(len(in_data)+8+8) | msghandle.msgHead
+	binary.BigEndian.PutUint32(tmpbuf, pklen)
+	buff.Write(tmpbuf)
+	binary.BigEndian.PutUint32(tmpbuf, gate.GetMsgID())
+	buff.Write(tmpbuf)
+	binary.BigEndian.PutUint32(tmpbuf, gate.GetMyID())
+	buff.Write(tmpbuf)
+	binary.BigEndian.PutUint32(tmpbuf, gate.GetTargetID())
+	buff.Write(tmpbuf)
+	buff.Write(in_data)
+	return buff.Bytes(), err
 }
 
 //编码
@@ -73,15 +87,22 @@ func (msghandle *GateJsonMessageHandle) Unmarshal(buff []byte) (data interface{}
 	if err != nil {
 		return nil, err
 	}
-	gatemsg := msget.(IGateMessage)
-	gatemsg.SetMsgID(msgid)
-	buff = buff[4:]
-	gatemsg.SetMsgID(binary.BigEndian.Uint32(buff[:4]))
-	buff = buff[4:]
-	gatemsg.SetTargetID(binary.BigEndian.Uint32(buff[:4]))
-	err = json.Unmarshal(buff, msget)
+	if gatemsg, ok := msget.(IGateMessage); ok {
+		gatemsg.SetMsgID(msgid)
+		buff = buff[4:]
+		gatemsg.SetMyID(binary.BigEndian.Uint32(buff[:4]))
+		buff = buff[4:]
+		gatemsg.SetTargetID(binary.BigEndian.Uint32(buff[:4]))
+		buff = buff[4:]
+		err = json.Unmarshal(buff, msget)
+		return msget, err
+	} else {
+		buff = buff[4:]
+		err = json.Unmarshal(buff, msget)
+		msget.(IMessage).SetAction(msgid)
+		return msget, err
+	}
 
-	return msget, err
 }
 
 //设置消息路由
