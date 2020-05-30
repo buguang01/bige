@@ -37,8 +37,19 @@ func JsonMessageHandleNew(opts ...options) (msghandle *JsonMessageHandle) {
 	}
 	return msghandle
 }
+
+//给gate发消息的编码
 func (msghandle *JsonMessageHandle) GateMarshal(gate IGateMessage, data interface{}) ([]byte, error) {
-	return nil, nil
+	buff := &bytes.Buffer{}
+	in_data, err := json.Marshal(data)
+	gate_data, gatelen := gate.GateMarshal()
+	tmpbuf := make([]byte, 4)
+	pklen := uint32(len(in_data)) + 4 + gatelen | msghandle.msgHead
+	binary.BigEndian.PutUint32(tmpbuf, pklen)
+	buff.Write(tmpbuf)
+	buff.Write(gate_data)
+	buff.Write(in_data)
+	return buff.Bytes(), err
 }
 
 //编码
@@ -68,10 +79,17 @@ func (msghandle *JsonMessageHandle) Unmarshal(buff []byte) (data interface{}, er
 	if err != nil {
 		return nil, err
 	}
-	buff = buff[4:]
-	err = json.Unmarshal(buff, msget)
-	msget.(IMessage).SetAction(msgid)
-	return msget, err
+	//是不是gate过来的消息
+	if gatemsg, ok := msget.(IGateMessage); ok {
+		buff, _ := gatemsg.GateUnmarshal(buff)
+		err = json.Unmarshal(buff, msget)
+		return msget, err
+	} else {
+		buff = buff[4:]
+		err = json.Unmarshal(buff, msget)
+		msget.(IMessage).SetAction(msgid)
+		return msget, err
+	}
 }
 
 //设置消息路由

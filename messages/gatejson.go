@@ -43,16 +43,12 @@ func GateJsonMessageHandleNew(opts ...options) (msghandle *GateJsonMessageHandle
 func (msghandle *GateJsonMessageHandle) GateMarshal(gate IGateMessage, data interface{}) ([]byte, error) {
 	buff := &bytes.Buffer{}
 	in_data, err := json.Marshal(data)
+	gate_data, gatelen := gate.GateMarshal()
 	tmpbuf := make([]byte, 4)
-	pklen := uint32(len(in_data)+8+8) | msghandle.msgHead
+	pklen := uint32(len(in_data)) + 4 + gatelen | msghandle.msgHead
 	binary.BigEndian.PutUint32(tmpbuf, pklen)
 	buff.Write(tmpbuf)
-	binary.BigEndian.PutUint32(tmpbuf, gate.GetMsgID())
-	buff.Write(tmpbuf)
-	binary.BigEndian.PutUint32(tmpbuf, gate.GetMyID())
-	buff.Write(tmpbuf)
-	binary.BigEndian.PutUint32(tmpbuf, gate.GetTargetID())
-	buff.Write(tmpbuf)
+	buff.Write(gate_data)
 	buff.Write(in_data)
 	return buff.Bytes(), err
 }
@@ -88,12 +84,7 @@ func (msghandle *GateJsonMessageHandle) Unmarshal(buff []byte) (data interface{}
 		return nil, err
 	}
 	if gatemsg, ok := msget.(IGateMessage); ok {
-		gatemsg.SetMsgID(msgid)
-		buff = buff[4:]
-		gatemsg.SetMyID(binary.BigEndian.Uint32(buff[:4]))
-		buff = buff[4:]
-		gatemsg.SetTargetID(binary.BigEndian.Uint32(buff[:4]))
-		buff = buff[4:]
+		buff, _ := gatemsg.GateUnmarshal(buff)
 		err = json.Unmarshal(buff, msget)
 		return msget, err
 	} else {
