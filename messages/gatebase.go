@@ -20,6 +20,13 @@ type IGateMessage interface {
 	GateUnmarshal(buff []byte) ([]byte, uint32)
 }
 
+type IGateChange interface {
+	//获取中转数据
+	GetBuffByte() *bytes.Buffer
+	//设置中转数据
+	SetBuffByte(buff []byte)
+}
+
 /*
 
  */
@@ -72,8 +79,18 @@ func (msg *GateMessage) GateUnmarshal(buff []byte) ([]byte, uint32) {
 	return buff, 12
 }
 
+/*
+gate用来中转消息的结构
+*/
 type DefGateMessage struct {
-	GateMessage
+	buffer *bytes.Buffer
+}
+
+func (this *DefGateMessage) GetBuffByte() *bytes.Buffer {
+	return this.buffer
+}
+func (this *DefGateMessage) SetBuffByte(buff []byte) {
+	this.buffer = bytes.NewBuffer(buff)
 }
 
 /*
@@ -91,6 +108,10 @@ gate的逻辑是
 需要先服务器连接gate，然后注册自己要听的消息，然后客户端上去拿到不同服务器的路由
 所以这里的路由应该只是头解，然后就按路由信息进行转发
 如果是后置gate，也只是头解出来，然后按头信息转发消息
+
+
+
+
 
 服务器如果过网关回复给客户端的直回消息，使用网关消息ID：XXX（具体看gate消息定义）直回消息
 在目标那一项中写上用户的ID就可以了；当然为了减少gate的拆解包的操作，gate应该是在收到后，

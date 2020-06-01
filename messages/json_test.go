@@ -1,6 +1,7 @@
 package messages_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -28,5 +29,23 @@ func TestJson(t *testing.T) {
 	} else {
 		fmt.Printf("result:%v", result)
 	}
+
+}
+
+type TestMsg struct {
+	messages.Message
+	// ActionID uint32 `json:"ACTIONID"`
+	MemberID int `json:"MEMBERID"`
+}
+
+func TestMsgfmt(t *testing.T) {
+	msg := new(TestMsg)
+	msg.ActionID = 1001
+	msg.MemberID = 10020202
+	b, _ := json.Marshal(msg)
+	fmt.Println(string(b))
+	msg2 := new(TestMsg)
+	json.Unmarshal(b, msg2)
+	fmt.Printf("%+v", msg2)
 
 }

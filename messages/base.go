@@ -33,6 +33,17 @@ type IMessage interface {
 	SetAction(msgid uint32)
 }
 
+type Message struct {
+	ActionID uint32 `json:"ACTIONID"` //消息号
+}
+
+func (msg *Message) GetAction() uint32 {
+	return msg.ActionID
+}
+func (msg *Message) SetAction(msgid uint32) {
+	msg.ActionID = msgid
+}
+
 type IHttpMessageHandle interface {
 	IMessage
 	//HTTP的回调
@@ -40,15 +51,8 @@ type IHttpMessageHandle interface {
 }
 
 type WebMessage struct {
-	ActionID uint32 `json:"ACTIONID"`
-	MemberID int    `json:"MEMBERID"`
-}
-
-func (msg *WebMessage) GetAction() uint32 {
-	return msg.ActionID
-}
-func (msg *WebMessage) SetAction(msgid uint32) {
-	msg.ActionID = msgid
+	Message
+	MemberID int `json:"MEMBERID"`
 }
 
 //HTTP的回调
@@ -81,16 +85,9 @@ type IWebSocketMessageHandle interface {
 }
 
 type WebScoketMessage struct {
-	ActionID uint32 `json:"ACTIONID"`
+	Message
 	MemberID int    `json:"MEMBERID"`
 	Hash     string `json:"HASH"`
-}
-
-func (msg *WebScoketMessage) GetAction() uint32 {
-	return msg.ActionID
-}
-func (msg *WebScoketMessage) SetAction(msgid uint32) {
-	msg.ActionID = msgid
 }
 
 //ws的回调
@@ -125,18 +122,12 @@ type ISocketResultMessage interface {
 }
 
 type ScoketMessage struct {
-	SendUserID int    `json:"SENDUID"`  //发信息用户ID
-	SendSID    string `json:"SENDSID"`  //发信息服务器（回复用的信息）
-	ActionID   uint32 `json:"ACTIONID"` //消息号
-	Topic      string `json:"TOPIC"`    //目标
+	Message
+	SendUserID int    `json:"SENDUID"` //发信息用户ID
+	SendSID    string `json:"SENDSID"` //发信息服务器（回复用的信息）
+	Topic      string `json:"TOPIC"`   //目标
 }
 
-func (msg *ScoketMessage) GetAction() uint32 {
-	return msg.ActionID
-}
-func (msg *ScoketMessage) SetAction(msgid uint32) {
-	msg.ActionID = msgid
-}
 func (msg *ScoketMessage) GetSendUserID() int {
 	return msg.SendUserID
 }
@@ -171,18 +162,12 @@ type INsqdResultMessage interface {
 
 //nsqd消息的基础结构
 type NsqdMessage struct {
-	SendUserID int    `json:"SENDUID"`  //发信息用户ID
-	SendSID    string `json:"SENDSID"`  //发信息服务器（回复用的信息）
-	ActionID   uint32 `json:"ACTIONID"` //消息号
-	Topic      string `json:"TOPIC"`    //目标
+	Message
+	SendUserID int    `json:"SENDUID"` //发信息用户ID
+	SendSID    string `json:"SENDSID"` //发信息服务器（回复用的信息）
+	Topic      string `json:"TOPIC"`   //目标
 }
 
-func (msg *NsqdMessage) GetAction() uint32 {
-	return msg.ActionID
-}
-func (msg *NsqdMessage) SetAction(msgid uint32) {
-	msg.ActionID = msgid
-}
 func (msg *NsqdMessage) GetSendUserID() int {
 	return msg.SendUserID
 }
