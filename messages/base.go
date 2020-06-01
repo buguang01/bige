@@ -100,11 +100,10 @@ func (msg *WebScoketMessage) WebSocketDirectCall(ws *WebSocketModel) {
 
 //SocketModel 用户连接对象
 type SocketModel struct {
-	Conn        net.Conn                //连接信息
-	CloseFun    func(skmd *SocketModel) //关闭连接时的方法
-	ConInfo     interface{}             //自定义的连接信息，给上层逻辑使用
-	KeyID       int                     //用来标记的ID
-	RouteHandle messages.IMessageHandle //消息路由,如果是nil表示不使用连接自己的路由，
+	Conn     net.Conn                //连接信息
+	CloseFun func(skmd *SocketModel) //关闭连接时的方法
+	ConInfo  interface{}             //自定义的连接信息，给上层逻辑使用
+	KeyID    int                     //用来标记的ID
 }
 type ISocketMessageHandle interface {
 	ISocketResultMessage
