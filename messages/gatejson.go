@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/buguang01/util"
@@ -84,16 +85,42 @@ func (msghandle *GateJsonMessageHandle) Unmarshal(buff []byte) (data interface{}
 	if err != nil {
 		return nil, err
 	}
-	if gatemsg, ok := msget.(IGateMessage); ok {
+	/*
+		1、本服务器消息 可以是 IGateMessage
+			一般消息结构就可以
+		2、客户端过来的消息 IGateChange
+			一般消息结构，本地不解，转发给别的服务器
+		3、服务器转发的消息 IGateChange,IGateMessage
+			二级消息结构，消息头告知转发动作，
+			如果是单转，应该可以不用重新打包
+			如果是多转，要把消息改成单转进行转发
+	*/
+	if changemsg, ok := msget.(IGateChange); ok {
+		if gatemsg, ok := msget.(IGateMessage); ok {
+			//服务器转发消息
+			buff, _ := gatemsg.GateUnmarshal(buff)
+			changemsg.SetBuffByte(buff)
+			return msget, err
+		} else if bmsg, ok := msget.(IMessage); ok {
+			//客户端消息
+			bmsg.SetAction(msgid)
+			buff = buff[4:]
+			changemsg.SetBuffByte(buff)
+			return msget, err
+		}
+	} else if gatemsg, ok := msget.(IGateMessage); ok {
+		//本服务器的消息
 		buff, _ := gatemsg.GateUnmarshal(buff)
 		err = json.Unmarshal(buff, msget)
 		return msget, err
-	} else {
+	} else if bmsg, ok := msget.(IMessage); ok {
+		//本服务器的消息
 		buff = buff[4:]
 		err = json.Unmarshal(buff, msget)
-		msget.(IMessage).SetAction(msgid)
+		bmsg.SetAction(msgid)
 		return msget, err
 	}
+	return nil, errors.New(fmt.Sprintf("route not IMessage.MsgID:%d", msgid))
 
 }
 

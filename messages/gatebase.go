@@ -82,14 +82,14 @@ func (msg *GateMessage) GateUnmarshal(buff []byte) ([]byte, uint32) {
 /*
 gate用来中转消息的结构
 */
-type DefGateMessage struct {
+type GateChangeMsg struct {
 	buffer *bytes.Buffer
 }
 
-func (this *DefGateMessage) GetBuffByte() *bytes.Buffer {
+func (this *GateChangeMsg) GetBuffByte() *bytes.Buffer {
 	return this.buffer
 }
-func (this *DefGateMessage) SetBuffByte(buff []byte) {
+func (this *GateChangeMsg) SetBuffByte(buff []byte) {
 	this.buffer = bytes.NewBuffer(buff)
 }
 
