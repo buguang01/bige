@@ -1,7 +1,6 @@
 package model_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/buguang01/Logger"
@@ -40,12 +39,12 @@ func TestDBTran(t *testing.T) {
 	r, err = db.Exec("insert into abtable (name) values(?)", "xiacs6")
 }
 
-func TestQuery(t *testing.T) {
-	Logger.Init(Logger.LogLeveldebuglevel, "", Logger.LogModeFmt)
-	defer Logger.LogClose()
-	redis := model.NewRedisAccess()
-	rd := redis.GetConn()
-	arr, _ := rd.DictGetAllByStringArray("testlist")
-	fmt.Println(arr)
+// func TestQuery(t *testing.T) {
+// 	Logger.Init(Logger.LogLeveldebuglevel, "", Logger.LogModeFmt)
+// 	defer Logger.LogClose()
+// 	redis := model.NewRedisAccess()
+// 	rd := redis.GetConn()
+// 	arr, _ := rd.DictGetAllByStringArray("testlist")
+// 	fmt.Println(arr)
 
-}
+// }
