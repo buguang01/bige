@@ -131,7 +131,7 @@ O(S+N)， S 为偏移量 start ， N 为指定区间内元素的数量。
 一个列表，包含指定区间内的元素。
 */
 func (rd *RedisHandleModel) Lrange(key string, start, stop int) ([]string, error) {
-	return redis.Strings(rd.Do("LRANGE", key, star, stop))
+	return redis.Strings(rd.Do("LRANGE", key, start, stop))
 }
 
 /*
@@ -168,7 +168,7 @@ O(N)， N 为被移除的元素的数量。
 命令执行成功时，返回 ok 。
 */
 func (rd *RedisHandleModel) Ltrim(key string, start, stop int) (string, error) {
-	return redis.Int(rd.Do("LTRIM", key, start, stop))
+	return redis.String(rd.Do("LTRIM", key, start, stop))
 }
 
 /*
@@ -261,7 +261,7 @@ BLPOP 是列表的阻塞式(blocking)弹出原语。
 BLPOP job command request 0
 BLPOP 保证返回的元素来自 command ，因为它是按”查找 job -> 查找 command -> 查找 request “这样的顺序，第一个找到的非空列表。
 */
-func (rd *RedisHandleModel) Blpop(timeout, keys ...string) (string, string, error) {
+func (rd *RedisHandleModel) Blpop(timeout string, keys ...string) (string, string, error) {
 	p := make([]interface{}, len(keys)+1)
 	for i, v := range keys {
 		p[i] = v
@@ -276,7 +276,7 @@ BRPOP key [key ...] timeout
 BRPOP 是列表的阻塞式(blocking)弹出原语。
 与BLPOP一样，只是弹出元素的位置不同
 */
-func (rd *RedisHandleModel) Brpop(timeout, keys ...string) (string, string, error) {
+func (rd *RedisHandleModel) Brpop(timeout string, keys ...string) (string, string, error) {
 	p := make([]interface{}, len(keys)+1)
 	for i, v := range keys {
 		p[i] = v
