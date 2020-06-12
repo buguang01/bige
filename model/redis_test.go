@@ -14,10 +14,9 @@ func TestRedis(t *testing.T) {
 	rd := model.NewRedisAccess()
 	rdmd := rd.GetConn()
 	// rdmd.Scan(0, "", 10)
-	if cur, result, err := rdmd.Scan(0, "", 10); err != nil {
+	if result, err := rdmd.SrandMember("fruit", 2); err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(cur)
 		fmt.Println(result)
 	}
 
