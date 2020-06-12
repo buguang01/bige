@@ -18,3 +18,11 @@ const (
 	Bit_Xor                              //逻辑异或
 	Bit_Not                              //逻辑非
 )
+
+type RedisListSite string
+
+const (
+	ListSite_BEFORE = "BEFORE" //在pivot之前，写入value
+	ListSite_AFTER  = "AFTER"  //在pivot之后，写入value
+
+)
