@@ -1,6 +1,8 @@
 package model
 
-import "github.com/garyburd/redigo/redis"
+import (
+	"github.com/garyburd/redigo/redis"
+)
 
 //MIGRATE 		不实现
 //MOVE
@@ -152,13 +154,12 @@ ZSCAN 命令用于迭代有序集合中的元素（包括元素成员和元素�
 
 /*
 SCAN cursor [MATCH pattern] [COUNT count]
-
+cursor 0 MATCH "" count 10
 SCAN 命令是一个基于游标的迭代器（cursor based iterator）：
 SCAN 命令每次被调用之后， 都会向用户返回一个新的游标，
 用户在下次迭代时需要使用这个新游标作为 SCAN 命令的游标参数， 以此来延续之前的迭代过程。
 当 SCAN 命令的游标参数被设置为 0 时， 服务器将开始一次新的迭代，
 而当服务器向用户返回值为 0 的游标时， 表示迭代已结束。
-
 返回：
 1) "17"
 2)  1) "key:12"
@@ -173,7 +174,7 @@ SCAN 命令每次被调用之后， 都会向用户返回一个新的游标，
     10) "key:7"
     11) "key:1"
 */
-func (rd *RedisHandleModel) Scan(cursor int, match string, count int) ([]string, error) {
+func (rd *RedisHandleModel) Scan(cursor int, match string, count int) (int, []string, error) {
 	p := []interface{}{
 		cursor,
 	}
@@ -184,14 +185,21 @@ func (rd *RedisHandleModel) Scan(cursor int, match string, count int) ([]string,
 	if count != 10 {
 		p = append(p, count)
 	}
-	return redis.Strings(rd.Do("SCAN", p...))
+	if reply, err := rd.Do("SCAN", p...); err != nil {
+		return 0, nil, err
+	} else {
+		rearr := reply.([]interface{})
+		rescur, _ := redis.Int(rearr[0], nil)
+		resli, _ := redis.Strings(rearr[1], nil)
+		return rescur, resli, nil
+	}
 }
 
 /*
 SSCAN key cursor [MATCH pattern] [COUNT count]
 命令用于迭代集合键中的元素。
 */
-func (rd *RedisHandleModel) SScan(key string, cursor int, match string, count int) ([]string, error) {
+func (rd *RedisHandleModel) SScan(key string, cursor int, match string, count int) (int, []string, error) {
 	p := []interface{}{
 		key, cursor,
 	}
@@ -202,14 +210,21 @@ func (rd *RedisHandleModel) SScan(key string, cursor int, match string, count in
 	if count != 10 {
 		p = append(p, count)
 	}
-	return redis.Strings(rd.Do("SSCAN", p...))
+	if reply, err := rd.Do("SSCAN", p...); err != nil {
+		return 0, nil, err
+	} else {
+		rearr := reply.([]interface{})
+		rescur, _ := redis.Int(rearr[0], nil)
+		resli, _ := redis.Strings(rearr[1], nil)
+		return rescur, resli, nil
+	}
 }
 
 /*
 HSCAN key cursor [MATCH pattern] [COUNT count]
 命令用于迭代哈希键中的键值对。
 */
-func (rd *RedisHandleModel) HScan(key string, cursor int, match string, count int) ([]string, error) {
+func (rd *RedisHandleModel) HScan(key string, cursor int, match string, count int) (int, []string, error) {
 	p := []interface{}{
 		key, cursor,
 	}
@@ -220,14 +235,21 @@ func (rd *RedisHandleModel) HScan(key string, cursor int, match string, count in
 	if count != 10 {
 		p = append(p, count)
 	}
-	return redis.Strings(rd.Do("HSCAN", p...))
+	if reply, err := rd.Do("HSCAN", p...); err != nil {
+		return 0, nil, err
+	} else {
+		rearr := reply.([]interface{})
+		rescur, _ := redis.Int(rearr[0], nil)
+		resli, _ := redis.Strings(rearr[1], nil)
+		return rescur, resli, nil
+	}
 }
 
 /*
 ZSCAN key cursor [MATCH pattern] [COUNT count]
 命令用于迭代有序集合中的元素（包括元素成员和元素分值）。
 */
-func (rd *RedisHandleModel) ZScan(key string, cursor int, match string, count int) ([]string, error) {
+func (rd *RedisHandleModel) ZScan(key string, cursor int, match string, count int) (int, []string, error) {
 	p := []interface{}{
 		key, cursor,
 	}
@@ -238,5 +260,12 @@ func (rd *RedisHandleModel) ZScan(key string, cursor int, match string, count in
 	if count != 10 {
 		p = append(p, count)
 	}
-	return redis.Strings(rd.Do("ZSCAN", p...))
+	if reply, err := rd.Do("ZSCAN", p...); err != nil {
+		return 0, nil, err
+	} else {
+		rearr := reply.([]interface{})
+		rescur, _ := redis.Int(rearr[0], nil)
+		resli, _ := redis.Strings(rearr[1], nil)
+		return rescur, resli, nil
+	}
 }
