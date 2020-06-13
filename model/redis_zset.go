@@ -2,6 +2,9 @@ package model
 
 import "github.com/garyburd/redigo/redis"
 
+//ZUNIONSTORE 	不实现
+//ZINTERSTORE
+
 /*
 ZADD key score member [[score member] [score member] ...]
 将一个或多个 member 元素及其 score 值加入到有序集 key 当中。
@@ -145,4 +148,154 @@ func (rd *RedisHandleModel) ZrangeByScoreWithScore(key string, min, max interfac
 //看ZrangeByScore
 func (rd *RedisHandleModel) ZrangeByScoreWithScoreLimit(key string, min, max interface{}, offset, count int) (map[string]string, error) {
 	return redis.StringMap(rd.Do("ZRANGEBYSCORE", key, min, max, "WITHSCORES", offset, count))
+}
+
+/*
+ZRANK key member
+返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递增(从小到大)顺序排列。
+排名以 0 为底，也就是说， score 值最小的成员排名为 0 。
+使用 ZREVRANK 命令可以获得成员按 score 值递减(从大到小)排列的排名。
+时间复杂度:
+O(log(N))
+返回值:
+如果 member 是有序集 key 的成员，返回 member 的排名。
+如果 member 不是有序集 key 的成员，返回 nil 。
+*/
+func (rd *RedisHandleModel) Zrank(key, member string) (int, error) {
+	return redis.Int(rd.Do("ZRANK", key, member))
+}
+
+/*
+ZREM key member [member ...]
+移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。
+当 key 存在但不是有序集类型时，返回一个错误。
+时间复杂度:
+O(M*log(N))， N 为有序集的基数， M 为被成功移除的成员的数量。
+返回值:
+被成功移除的成员的数量，不包括被忽略的成员。
+*/
+func (rd *RedisHandleModel) Zrem(key string, members ...string) (int, error) {
+	p := []interface{}{
+		key,
+	}
+	for _, v := range members {
+		p = append(p, v)
+	}
+	return redis.Int(rd.Do("ZREM", p...))
+}
+
+/*
+ZREMRANGEBYRANK key start stop
+移除有序集 key 中，指定排名(rank)区间内的所有成员。
+区间分别以下标参数 start 和 stop 指出，包含 start 和 stop 在内。
+下标参数 start 和 stop 都以 0 为底，也就是说，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，以此类推。
+你也可以使用负数下标，以 -1 表示最后一个成员， -2 表示倒数第二个成员，以此类推。
+时间复杂度:
+O(log(N)+M)， N 为有序集的基数，而 M 为被移除成员的数量。
+返回值:
+被移除成员的数量。
+*/
+func (rd *RedisHandleModel) ZremRangeByRank(key string, start, stop int) (int, error) {
+	return redis.Int(rd.Do("ZREMRANGEBYRANK", key, start, stop))
+}
+
+/*
+ZREMRANGEBYSCORE key min max
+移除有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。
+自版本2.1.6开始， score 值等于 min 或 max 的成员也可以不包括在内，详情请参见 ZRANGEBYSCORE 命令。
+时间复杂度:
+O(log(N)+M)， N 为有序集的基数，而 M 为被移除成员的数量。
+返回值:
+被移除成员的数量。
+*/
+func (rd *RedisHandleModel) ZremRangeByScore(key string, min, max interface{}) (int, error) {
+	return redis.Int(rd.Do("ZREMRANGEBYSCORE", key, min, max))
+}
+
+/*
+ZREVRANGE key start stop [WITHSCORES]
+返回有序集 key 中，指定区间内的成员。
+其中成员的位置按 score 值递减(从大到小)来排列。
+具有相同 score 值的成员按字典序的逆序(reverse lexicographical order)排列。
+除了成员按 score 值递减的次序排列这一点外， ZREVRANGE 命令的其他方面和 ZRANGE 命令一样。
+时间复杂度:
+O(log(N)+M)， N 为有序集的基数，而 M 为结果集的基数。
+返回值:
+指定区间内，带有 score 值(可选)的有序集成员的列表。
+*/
+func (rd *RedisHandleModel) ZrevRange(key string, start, stop int) ([]string, error) {
+	return redis.Strings(rd.Do("ZREVRANGE", key, start, stop))
+}
+
+/*
+看ZrevRange
+返回值:
+指定区间内，带有 score 值(可选)的有序集成员的列表。
+*/
+func (rd *RedisHandleModel) ZrevRangeWithScores(key string, start, stop int) (map[string]string, error) {
+	return redis.StringMap(rd.Do("ZREVRANGE", key, start, stop, "WITHSCORES"))
+}
+
+/*
+看ZrevRange
+返回值:
+指定区间内，带有 score 值(可选)的有序集成员的列表。
+*/
+func (rd *RedisHandleModel) ZrevRangeWithScoresByInt(key string, start, stop int) (map[string]int, error) {
+	return redis.IntMap(rd.Do("ZREVRANGE", key, start, stop, "WITHSCORES"))
+}
+
+/*
+ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]
+返回有序集 key 中， score 值介于 max 和 min 之间(默认包括等于 max 或 min )的所有的成员。有序集成员按 score 值递减(从大到小)的次序排列。
+具有相同 score 值的成员按字典序的逆序(reverse lexicographical order )排列。
+除了成员按 score 值递减的次序排列这一点外， ZREVRANGEBYSCORE 命令的其他方面和 ZRANGEBYSCORE 命令一样。
+时间复杂度:
+O(log(N)+M)， N 为有序集的基数， M 为结果集的基数。
+返回值:
+指定区间内，带有 score 值(可选)的有序集成员的列表。
+*/
+func (rd *RedisHandleModel) ZrevRangeByScore(key string, min, max interface{}) ([]string, error) {
+	return redis.Strings(rd.Do("ZREVRANGEBYSCORE", key, min, max))
+}
+
+//看ZrevRangeByScore
+func (rd *RedisHandleModel) ZrevRangeByScoreLimit(key string, min, max interface{}, offset, count int) ([]string, error) {
+	return redis.Strings(rd.Do("ZREVRANGEBYSCORE", key, min, max, offset, count))
+}
+
+//看ZrevRangeByScore
+func (rd *RedisHandleModel) ZrevRangeByScoreWithScore(key string, min, max interface{}) (map[string]string, error) {
+	return redis.StringMap(rd.Do("ZREVRANGEBYSCORE", key, min, max, "WITHSCORES"))
+}
+
+//看ZrevRangeByScore
+func (rd *RedisHandleModel) ZrevRangeByScoreWithScoreLimit(key string, min, max interface{}, offset, count int) (map[string]string, error) {
+	return redis.StringMap(rd.Do("ZREVRANGEBYSCORE", key, min, max, "WITHSCORES", offset, count))
+}
+
+/*
+ZREVRANK key member
+返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递减(从大到小)排序。
+排名以 0 为底，也就是说， score 值最大的成员排名为 0 。
+使用 ZRANK 命令可以获得成员按 score 值递增(从小到大)排列的排名。
+时间复杂度:
+O(log(N))
+返回值:
+如果 member 是有序集 key 的成员，返回 member 的排名。
+如果 member 不是有序集 key 的成员，返回 nil 。
+*/
+func (rd *RedisHandleModel) ZrevRank(key, member string) (int, error) {
+	return redis.Int(rd.Do("ZREVRANK", key, member))
+}
+
+/*
+ZSCORE key member
+返回有序集 key 中，成员 member 的 score 值。
+如果 member 元素不是有序集 key 的成员，或 key 不存在，返回 nil 。
+返回值:
+member 成员的 score 值，以字符串形式表示。
+*/
+func (rd *RedisHandleModel) Zscore(key, member string) (string, error) {
+	return redis.String(rd.Do("ZSCORE", key, member))
 }
