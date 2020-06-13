@@ -143,6 +143,6 @@ func (rd *RedisHandleModel) ZrangeByScoreWithScore(key string, min, max interfac
 }
 
 //看ZrangeByScore
-func (rd *RedisHandleModel) ZrangeByScoreWithScore(key string, min, max interface{}, offset, count int) (map[string]string, error) {
+func (rd *RedisHandleModel) ZrangeByScoreWithScoreLimit(key string, min, max interface{}, offset, count int) (map[string]string, error) {
 	return redis.StringMap(rd.Do("ZRANGEBYSCORE", key, min, max, "WITHSCORES", offset, count))
 }
