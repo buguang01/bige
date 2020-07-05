@@ -134,7 +134,15 @@ func (rd *RedisHandleModel) Hmget(key string, fields ...string) (map[string]stri
 	for _, f := range fields {
 		p = append(p, f)
 	}
-	return redis.StringMap(rd.Do("HMGET", p...))
+	valli, err := redis.Strings(rd.Do("HMGET", p...))
+	if err != nil {
+		return map[string]string{}, err
+	}
+	result := make(map[string]string)
+	for index, fd := range fields {
+		result[fd] = valli[index]
+	}
+	return result, nil
 }
 
 /*
