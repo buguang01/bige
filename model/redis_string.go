@@ -11,7 +11,7 @@ XX ：只在键已经存在时，才对键进行设置操作。
 */
 func (rd *RedisHandleModel) Set(key string, val string, ex int64, n RedisSetParam) (interface{}, error) {
 	parli := make([]interface{}, 0, 5)
-	parli = append(parli, val)
+	parli = append(parli, key, val)
 	if ex != -1 {
 		parli = append(parli, "EX", ex)
 	}
