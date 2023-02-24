@@ -10,6 +10,6 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/nsqio/go-nsq v1.0.7
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
+	golang.org/x/net v0.7.0
 	google.golang.org/appengine v1.6.6 // indirect
 )
